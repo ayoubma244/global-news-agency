@@ -101,11 +101,26 @@ export async function clearSessionCookie() {
 
 export const SESSION_COOKIE_NAME = SESSION_COOKIE
 
-// ===== Rate limiting (in-memory, basic) =====
-// For production with multiple instances, use Redis-backed rate limiter
+// ===== Rate limiting =====
+// Uses Redis when available (production), falls back to in-memory (dev only)
 const rateLimitMap = new Map<string, { count: number; resetAt: number }>()
 
-export function rateLimit(key: string, maxRequests: number = 100, windowMs: number = 60_000): { allowed: boolean; remaining: number; resetAt: number } {
+export async function rateLimit(
+  key: string,
+  maxRequests: number = 100,
+  windowMs: number = 60_000
+): Promise<{ allowed: boolean; remaining: number; resetAt: number }> {
+  // Try Redis first (production)
+  if (process.env.REDIS_URL) {
+    try {
+      const { rateLimitRedis } = await import('@/lib/redis')
+      return await rateLimitRedis(key, maxRequests, windowMs)
+    } catch (e) {
+      console.error('Redis rate limit failed, falling back to in-memory:', e)
+    }
+  }
+
+  // In-memory fallback (dev only)
   const now = Date.now()
   const entry = rateLimitMap.get(key)
 

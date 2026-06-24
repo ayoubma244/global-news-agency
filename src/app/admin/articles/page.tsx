@@ -134,6 +134,7 @@ export default function AdminArticles() {
             <SelectItem value="all">كل الحالات</SelectItem>
             <SelectItem value="draft">مسودة</SelectItem>
             <SelectItem value="published">منشور</SelectItem>
+            <SelectItem value="needs_review">يحتاج مراجعة</SelectItem>
             <SelectItem value="archived">مؤرشف</SelectItem>
           </SelectContent>
         </Select>
@@ -170,9 +171,13 @@ export default function AdminArticles() {
                   <Badge className={
                     a.status === 'published' ? 'bg-green-100 text-green-700' :
                     a.status === 'draft' ? 'bg-slate-100 text-slate-700' :
+                    a.status === 'needs_review' ? 'bg-red-100 text-red-700' :
                     'bg-yellow-100 text-yellow-700'
                   }>
-                    {a.status === 'published' ? 'منشور' : a.status === 'draft' ? 'مسودة' : a.status}
+                    {a.status === 'published' ? 'منشور' :
+                     a.status === 'draft' ? 'مسودة' :
+                     a.status === 'needs_review' ? '⚠️ مراجعة' :
+                     a.status}
                   </Badge>
                   {a.aiModel && a.aiModel !== 'fallback' && (
                     <Badge variant="outline" className="bg-purple-50 text-purple-700 text-xs gap-1" title={`AI: ${a.aiModel} | Tone: ${a.aiToneUsed}`}>

@@ -169,23 +169,86 @@ async function processItem(
   if (!categoryId) {
     throw new Error('No category available')
   }
-  // 1. AI Rewrite
+
+  // 1. AI Rewrite (with error handling → manual review queue)
   const rewriteStart = Date.now()
-  const rewritten = await rewriteArticle(item, {
-    tone: source.aiTone as AiTone,
-    length: source.aiLength as AiLength,
-    outputLang: source.language as any || 'ar',
-    siteName,
-    categoryName: source.category?.nameAr,
-  })
+  let rewritten
+  let aiFailed = false
+  try {
+    rewritten = await rewriteArticle(item, {
+      tone: source.aiTone as AiTone,
+      length: source.aiLength as AiLength,
+      outputLang: source.language as any || 'ar',
+      siteName,
+      categoryName: source.category?.nameAr,
+    })
 
-  await logStage('ai_rewrite', 'success',
-    `${item.title.slice(0, 50)}... → ${rewritten.titleAr.slice(0, 50)}... (quality: ${rewritten.qualityScore}%, plagiarism: ${rewritten.plagiarismScore}%)`,
-    { qualityScore: rewritten.qualityScore, plagiarismScore: rewritten.plagiarismScore, humanScore: rewritten.humanScore },
-    Date.now() - rewriteStart
-  )
+    // Check if AI actually rewrote or just used fallback
+    if (rewritten.model === 'fallback') {
+      aiFailed = true
+      await logStage('ai_rewrite', 'error',
+        `AI rewrite failed (fallback used) for: ${item.title.slice(0, 40)}... → routing to manual review`,
+        { source: item.link },
+        Date.now() - rewriteStart
+      )
+    } else {
+      await logStage('ai_rewrite', 'success',
+        `${item.title.slice(0, 50)}... → ${rewritten.titleAr.slice(0, 50)}... (quality: ${rewritten.qualityScore}%, plagiarism: ${rewritten.plagiarismScore}%)`,
+        { qualityScore: rewritten.qualityScore, plagiarismScore: rewritten.plagiarismScore, humanScore: rewritten.humanScore },
+        Date.now() - rewriteStart
+      )
+    }
+  } catch (e: any) {
+    // AI rewrite crashed completely → create draft with original content for manual review
+    aiFailed = true
+    await logStage('ai_rewrite', 'error',
+      `AI rewrite crashed: ${e.message} → routing to manual review`,
+      { source: item.link, error: e.message },
+      Date.now() - rewriteStart
+    )
+    // Use a minimal fallback so the article is still created for manual editing
+    rewritten = {
+      titleAr: item.title,
+      titleEn: item.title,
+      leadAr: item.summary,
+      leadEn: item.summary,
+      bodyAr: item.content || item.summary || item.title,
+      bodyEn: '',
+      excerpt: item.summary?.slice(0, 160) || '',
+      seoTitle: item.title.slice(0, 60),
+      seoDescription: (item.summary || '').slice(0, 160),
+      seoKeywords: '',
+      tags: [],
+      plagiarismScore: 100,
+      humanScore: 0,
+      qualityScore: 0,
+      model: 'failed',
+    }
+  }
 
-  // 2. Generate slug
+  // 2. Fact-Checking (compare source vs rewritten)
+  let factCheckResult: any = null
+  try {
+    const { factCheck } = await import('@/lib/fact-check')
+    factCheckResult = factCheck(item.content || item.summary || item.title, rewritten.bodyAr)
+
+    if (factCheckResult.needsReview) {
+      aiFailed = true  // Route to manual review if facts don't match
+      await logStage('fact_check', 'error',
+        `Fact-check failed (score: ${factCheckResult.score}%) for: ${rewritten.titleAr.slice(0, 40)}...`,
+        { score: factCheckResult.score, discrepancies: factCheckResult.discrepancies.slice(0, 3) },
+      )
+    } else {
+      await logStage('fact_check', 'success',
+        `Fact-check passed (score: ${factCheckResult.score}%)`,
+        { score: factCheckResult.score },
+      )
+    }
+  } catch (e: any) {
+    await logStage('fact_check', 'error', e.message)
+  }
+
+  // 3. Generate slug
   const slug = (rewritten.titleEn || rewritten.titleAr)
     .toLowerCase()
     .replace(/[^\w\u0600-\u06FF\s-]/g, '')
@@ -193,10 +256,20 @@ async function processItem(
     .replace(/\s+/g, '-')
     .slice(0, 80) + '-' + Date.now().toString(36)
 
-  // 3. Determine status
-  const status = autoPublish ? 'published' : 'draft'
+  // 4. Determine status
+  // - If AI failed OR fact-check failed → 'needs_review' (manual review queue)
+  // - If autoPublish and no failures → 'published'
+  // - Otherwise → 'draft'
+  let status: string
+  if (aiFailed) {
+    status = 'needs_review'
+  } else if (autoPublish) {
+    status = 'published'
+  } else {
+    status = 'draft'
+  }
 
-  // 4. Create article
+  // 5. Create article
   const article = await db.article.create({
     data: {
       slug,
@@ -212,7 +285,7 @@ async function processItem(
       sourceName: source.siteName || source.name,
       author: 'Automated System',
       status,
-      isBreaking: source.aiTone === 'breaking',
+      isBreaking: source.aiTone === 'breaking' && !aiFailed,
       isFeatured: false,
       seoTitle: rewritten.seoTitle,
       seoDescription: rewritten.seoDescription,
@@ -224,6 +297,10 @@ async function processItem(
       aiModel: rewritten.model,
       plagiarismScore: rewritten.plagiarismScore,
       humanScore: rewritten.humanScore,
+      factCheckNotes: factCheckResult ? JSON.stringify({
+        score: factCheckResult.score,
+        discrepancies: factCheckResult.discrepancies.slice(0, 5),
+      }) : null,
     },
   })
 
@@ -232,11 +309,23 @@ async function processItem(
 
   await logStage('publish', 'success',
     `Created article: ${rewritten.titleAr.slice(0, 50)}... (${status})`,
-    { id: article.id, slug, status },
+    { id: article.id, slug, status, factCheckScore: factCheckResult?.score },
     0
   )
 
-  // 5. Process images (if enabled)
+  // 6. Notify IndexNow for instant indexing (only for published articles)
+  if (status === 'published') {
+    try {
+      const { notifyArticlePublished } = await import('@/lib/indexnow')
+      await notifyArticlePublished(slug)
+      await logStage('indexnow', 'success', `Submitted to IndexNow: ${slug}`)
+    } catch (e: any) {
+      await logStage('indexnow', 'error', e.message)
+      // Don't fail the whole pipeline for IndexNow
+    }
+  }
+
+  // 7. Process images (if enabled) - errors don't stop the pipeline
   if (source.includeImages && item.images.length > 0) {
     const imgStart = Date.now()
     try {
@@ -284,6 +373,7 @@ async function processItem(
         Date.now() - imgStart
       )
     } catch (e: any) {
+      // Image processing failure is non-fatal - article is still created
       await logStage('image_process', 'error', e.message, { article: article.id }, Date.now() - imgStart)
     }
   }

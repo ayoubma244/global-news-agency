@@ -66,28 +66,28 @@ describe('Session tokens', () => {
 })
 
 describe('Rate limiting', () => {
-  it('should allow requests under limit', () => {
+  it('should allow requests under limit', async () => {
     const key = `test-allow-${Date.now()}-${Math.random()}`
     for (let i = 0; i < 5; i++) {
-      const result = rateLimit(key, 10, 60_000)
+      const result = await rateLimit(key, 10, 60_000)
       expect(result.allowed).toBe(true)
     }
   })
 
-  it('should block requests over limit', () => {
+  it('should block requests over limit', async () => {
     const key = `test-block-${Date.now()}-${Math.random()}`
     for (let i = 0; i < 10; i++) {
-      rateLimit(key, 10, 60_000)
+      await rateLimit(key, 10, 60_000)
     }
-    const result = rateLimit(key, 10, 60_000)
+    const result = await rateLimit(key, 10, 60_000)
     expect(result.allowed).toBe(false)
     expect(result.remaining).toBe(0)
   })
 
-  it('should track remaining correctly', () => {
+  it('should track remaining correctly', async () => {
     const key = `test-remaining-${Date.now()}-${Math.random()}`
-    rateLimit(key, 5, 60_000)
-    const result = rateLimit(key, 5, 60_000)
+    await rateLimit(key, 5, 60_000)
+    const result = await rateLimit(key, 5, 60_000)
     expect(result.remaining).toBe(3)
   })
 })

@@ -10,7 +10,7 @@ export async function POST(req: NextRequest) {
     // Rate limit: 5 login attempts per minute per IP
     const h = await headers()
     const ip = h.get('x-forwarded-for')?.split(',')[0] || h.get('x-real-ip') || 'unknown'
-    const rl = rateLimit(`login:${ip}`, 5, 60_000)
+    const rl = await rateLimit(`login:${ip}`, 5, 60_000)
     if (!rl.allowed) {
       return NextResponse.json(
         { ok: false, error: 'محاولات كثيرة. حاول بعد دقيقة.' },
