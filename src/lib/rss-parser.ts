@@ -161,8 +161,10 @@ function parseItem(xml: string, isAtom: boolean, decode: (s: string) => string):
   // GUID
   const guid = decode(xml.match(/<guid[^>]*>([\s\S]*?)<\/guid>/)?.[1] || xml.match(/<id>([\s\S]*?)<\/id>/)?.[1] || '')
 
-  // Extract images
-  const images = extractImages(content, link)
+  // Extract images from both content AND the item XML itself (media:content, media:thumbnail, enclosure)
+  const contentImages = extractImages(content, link)
+  const itemImages = extractImages(xml, link)
+  const images = Array.from(new Set([...contentImages, ...itemImages]))
   const imageUrl = images[0]
 
   return {
