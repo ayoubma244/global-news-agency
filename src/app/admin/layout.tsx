@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react'
 import { useRouter, usePathname } from 'next/navigation'
 import Link from 'next/link'
 import { Button } from '@/components/ui/button'
-import { Newspaper, LayoutDashboard, FolderTree, FileText, Settings, Key, LogOut, Menu, X, ExternalLink, FilePlus } from 'lucide-react'
+import { Newspaper, LayoutDashboard, FolderTree, FileText, Settings, Key, LogOut, Menu, X, ExternalLink, FilePlus, Bot } from 'lucide-react'
 
 interface Admin {
   id: string
@@ -18,6 +18,7 @@ const navItems = [
   { href: '/admin/categories', label: 'الكاتيجوريز', icon: FolderTree },
   { href: '/admin/articles', label: 'المقالات', icon: FileText },
   { href: '/admin/pages', label: 'الصفحات', icon: FilePlus },
+  { href: '/admin/automation', label: 'الأتمتة', icon: Bot },
   { href: '/admin/api-keys', label: 'API Keys', icon: Key },
   { href: '/admin/settings', label: 'الإعدادات', icon: Settings },
 ]

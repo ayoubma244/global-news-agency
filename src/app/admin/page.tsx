@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { FolderTree, FileText, FilePlus, Key, Newspaper, TrendingUp, Eye, Clock, Activity } from 'lucide-react'
+import { FolderTree, FileText, FilePlus, Key, Newspaper, TrendingUp, Eye, Clock, Activity, Bot } from 'lucide-react'
 
 interface Stats {
   categories: number
@@ -41,7 +41,7 @@ export default function AdminDashboard() {
     { label: 'الكاتيجوريز', value: stats?.categories ?? 0, icon: FolderTree, href: '/admin/categories', color: 'bg-blue-500' },
     { label: 'المقالات', value: stats?.articles ?? 0, icon: FileText, href: '/admin/articles', color: 'bg-green-500' },
     { label: 'الصفحات', value: stats?.pages ?? 0, icon: FilePlus, href: '/admin/pages', color: 'bg-purple-500' },
-    { label: 'API Keys', value: stats?.apiKeys ?? 0, icon: Key, href: '/admin/api-keys', color: 'bg-orange-500' },
+    { label: 'الأتمتة', value: 'تشغيل', icon: Bot, href: '/admin/automation', color: 'bg-indigo-500' },
   ]
 
   if (loading) {
@@ -172,6 +172,17 @@ export default function AdminDashboard() {
                 <div>
                   <p className="font-medium text-sm text-slate-900">إضافة API Key</p>
                   <p className="text-xs text-slate-500">لمصادر الأخبار</p>
+                </div>
+              </div>
+            </Link>
+            <Link href="/admin/automation" className="block p-3 bg-gradient-to-br from-indigo-50 to-purple-50 hover:from-indigo-100 hover:to-purple-100 rounded-lg transition-colors border border-indigo-200">
+              <div className="flex items-center gap-3">
+                <div className="w-8 h-8 bg-indigo-500 rounded-lg flex items-center justify-center">
+                  <Bot className="h-4 w-4 text-white" />
+                </div>
+                <div>
+                  <p className="font-medium text-sm text-slate-900">🚀 تشغيل الأتمتة</p>
+                  <p className="text-xs text-slate-500">جلب + AI + نشر تلقائي</p>
                 </div>
               </div>
             </Link>
