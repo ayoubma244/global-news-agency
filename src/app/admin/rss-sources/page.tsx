@@ -73,6 +73,7 @@ export default function AdminRssSources() {
   const [deleteTarget, setDeleteTarget] = useState<RssSource | null>(null)
   const [testing, setTesting] = useState<string | null>(null)
   const [testResult, setTestResult] = useState<any>(null)
+  const [seeding, setSeeding] = useState(false)
 
   const load = async () => {
     setLoading(true)
@@ -94,7 +95,19 @@ export default function AdminRssSources() {
       body: JSON.stringify({ isActive: !src.isActive }),
     })
     if (res.ok) {
-      toast.success(src.isActive ? 'تم تعطيل المصدر' : 'تم تفعيل المصدر')
+      toast.success(src.isActive ? 'Source disabled' : 'Source enabled')
+      load()
+    }
+  }
+
+  const toggleAutoPublish = async (src: RssSource) => {
+    const res = await fetch(`/api/rss-sources/${src.id}`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ autoPublish: !src.autoPublish }),
+    })
+    if (res.ok) {
+      toast.success(src.autoPublish ? 'Auto-publish disabled' : 'Auto-publish enabled')
       load()
     }
   }
@@ -103,7 +116,7 @@ export default function AdminRssSources() {
     if (!deleteTarget) return
     const res = await fetch(`/api/rss-sources/${deleteTarget.id}`, { method: 'DELETE' })
     if (res.ok) {
-      toast.success('تم حذف المصدر')
+      toast.success('تم Delete المصدر')
       setDeleteTarget(null)
       load()
     }
@@ -130,24 +143,49 @@ export default function AdminRssSources() {
         <div>
           <h1 className="text-2xl font-bold text-slate-900 flex items-center gap-2">
             <Rss className="h-6 w-6" />
-            مصادر RSS
+            RSS Sources
           </h1>
-          <p className="text-slate-600 mt-1">إدارة مصادر RSS لجلب الأخبار + إعادة صياغة AI تلقائياً</p>
+          <p className="text-slate-600 mt-1">Manage RSS sources for news aggregation + AI rewriting</p>
         </div>
-        <Button onClick={() => { setEditing(null); setEditOpen(true) }} className="gap-2">
-          <Plus className="h-4 w-4" /> إضافة مصدر
-        </Button>
+        <div className="flex gap-2">
+          <Button
+            onClick={async () => {
+              if (!confirm('Add 35+ RSS sources from major news outlets (CNN, BBC, Reuters, etc)?')) return
+              setSeeding(true)
+              try {
+                const res = await fetch('/api/rss-sources/seed', { method: 'POST' })
+                const data = await res.json()
+                if (data.ok) {
+                  toast.success(`Added ${data.added} sources (${data.skipped} already exist)`)
+                  load()
+                }
+              } catch (e: any) {
+                toast.error(e.message)
+              }
+              setSeeding(false)
+            }}
+            disabled={seeding}
+            variant="outline"
+            className="gap-2"
+          >
+            {seeding ? <Loader2 className="h-4 w-4 animate-spin" /> : <Zap className="h-4 w-4" />}
+            Seed Sources
+          </Button>
+          <Button onClick={() => { setEditing(null); setEditOpen(true) }} className="gap-2">
+            <Plus className="h-4 w-4" /> Add Source
+          </Button>
+        </div>
       </div>
 
       {/* Info banner */}
       <Alert className="bg-gradient-to-br from-indigo-50 to-purple-50 border-indigo-200">
         <Zap className="h-4 w-4 text-indigo-600" />
         <AlertDescription className="text-indigo-900">
-          <strong>كيف يعمل النظام:</strong> عند إضافة مصدر RSS، يقوم الموقع بـ:
-          <span className="block mt-1">1️⃣ جلب آخر الأخبار من الرابط</span>
-          <span className="block">2️⃣ إعادة صياغة كل مقال بالـ AI بأسلوب إنساني (5 أنماط) لتجنب كوبي رايت</span>
-          <span className="block">3️⃣ تحميل الصور + إضافة اسم موقعك كعلامة مائية</span>
-          <span className="block">4️⃣ حفظ المقال (مسودة أو منشور حسب الإعداد)</span>
+          <strong>How it works:</strong> When you add an RSS source, the site will:
+          <span className="block mt-1">1️⃣ 1. Fetch latest news from the URL</span>
+          <span className="block">2️⃣ 2. AI rewrite each article in human style (5 tones) to avoid copyright</span>
+          <span className="block">3️⃣ 3. Download images + add your site name as watermark</span>
+          <span className="block">4️⃣ 4. Save article (draft or published based on settings)</span>
         </AlertDescription>
       </Alert>
 
@@ -158,8 +196,8 @@ export default function AdminRssSources() {
           ) : sources.length === 0 ? (
             <div className="text-center py-12 text-slate-500">
               <Rss className="h-12 w-12 mx-auto mb-2 opacity-30" />
-              <p>لا توجد مصادر RSS بعد</p>
-              <p className="text-xs mt-1">أضف مصدر RSS لبدء جلب الأخبار تلقائياً</p>
+              <p>لا توجد RSS Sources بعد</p>
+              <p className="text-xs mt-1">Add an RSS source to start fetching news automatically</p>
             </div>
           ) : (
             <div className="divide-y divide-slate-100">
@@ -229,16 +267,25 @@ export default function AdminRssSources() {
                         onClick={() => handleTest(src)}
                         disabled={testing === src.id}
                         className="h-8 w-8 p-0"
-                        title="فحص"
+                        title="Test"
                       >
                         {testing === src.id ? <Loader2 className="h-4 w-4 animate-spin" /> : <TestTube2 className="h-4 w-4" />}
                       </Button>
                       <Button
                         size="sm"
                         variant="ghost"
+                        onClick={() => toggleAutoPublish(src)}
+                        className={`h-8 px-2 text-xs ${src.autoPublish ? 'text-green-600 bg-green-50' : 'text-slate-400'}`}
+                        title={src.autoPublish ? 'Auto-publish ON' : 'Auto-publish OFF'}
+                      >
+                        {src.autoPublish ? '✓ Auto' : 'Manual'}
+                      </Button>
+                      <Button
+                        size="sm"
+                        variant="ghost"
                         onClick={() => toggleActive(src)}
                         className={`h-8 w-8 p-0 ${src.isActive ? 'text-green-600' : 'text-slate-400'}`}
-                        title={src.isActive ? 'تعطيل' : 'تفعيل'}
+                        title={src.isActive ? 'Disable' : 'Enable'}
                       >
                         <Power className="h-4 w-4" />
                       </Button>
@@ -256,7 +303,7 @@ export default function AdminRssSources() {
                         variant="ghost"
                         onClick={() => setDeleteTarget(src)}
                         className="h-8 w-8 p-0 text-red-600"
-                        title="حذف"
+                        title="Delete"
                       >
                         <Trash2 className="h-4 w-4" />
                       </Button>
@@ -281,13 +328,13 @@ export default function AdminRssSources() {
         <DialogContent>
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2 text-red-600">
-              <AlertCircle className="h-5 w-5" /> تأكيد الحذف
+              <AlertCircle className="h-5 w-5" /> Confirm Delete
             </DialogTitle>
-            <DialogDescription>هل تريد حذف مصدر «{deleteTarget?.name}»؟ لن يتم حذف المقالات المنشورة.</DialogDescription>
+            <DialogDescription>هل تريد Delete مصدر «{deleteTarget?.name}»؟ لن يتم Delete المقالات المنشورة.</DialogDescription>
           </DialogHeader>
           <DialogFooter>
-            <Button variant="outline" onClick={() => setDeleteTarget(null)}>إلغاء</Button>
-            <Button variant="destructive" onClick={handleDelete}>حذف</Button>
+            <Button variant="outline" onClick={() => setDeleteTarget(null)}>Cancel</Button>
+            <Button variant="destructive" onClick={handleDelete}>Delete</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
@@ -345,12 +392,12 @@ function RssSourceEditor({
       })
       const data = await res.json()
       if (!data.ok) {
-        setError(data.error || 'فشل الحفظ')
+        setError(data.error || 'فشل الSave')
         setSaving(false)
         return
       }
       if (data.warning) toast.warning(data.warning)
-      toast.success(source ? 'تم تحديث المصدر' : 'تم إضافة المصدر')
+      toast.success(source ? 'تم تحديث المصدر' : 'تم Add المصدر')
       onSaved()
     } catch (e: any) {
       setError(e.message)
@@ -362,9 +409,9 @@ function RssSourceEditor({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle>{source ? 'تعديل مصدر RSS' : 'مصدر RSS جديد'}</DialogTitle>
+          <DialogTitle>{source ? 'Edit RSS Source' : 'New RSS Source'}</DialogTitle>
           <DialogDescription>
-            {source ? source.name : 'أضف رابط RSS لجلب الأخبار تلقائياً وإعادة صياغتها بالـ AI'}
+            {source ? source.name : 'Add RSS URL to auto-fetch and AI-rewrite news'}
           </DialogDescription>
         </DialogHeader>
 
@@ -372,32 +419,32 @@ function RssSourceEditor({
           {error && <div className="bg-red-50 border border-red-200 text-red-700 p-3 rounded-lg text-sm">{error}</div>}
 
           <div className="space-y-2">
-            <Label>اسم المصدر *</Label>
+            <Label>Source Name *</Label>
             <Input value={form.name} onChange={e => setForm({ ...form, name: e.target.value })} required placeholder="CNN - أخبار عالمية" />
           </div>
 
           <div className="space-y-2">
-            <Label>رابط RSS *</Label>
+            <Label>RSS URL *</Label>
             <Input value={form.url} onChange={e => setForm({ ...form, url: e.target.value })} required dir="ltr" placeholder="https://example.com/rss" />
             <p className="text-xs text-slate-500">
-              رابط RSS صحيح (RSS 2.0 / Atom). مثال: <code>http://rss.cnn.com/rss/edition_world.rss</code>
+              RSS URL صحيح (RSS 2.0 / Atom). مثال: <code>http://rss.cnn.com/rss/edition_world.rss</code>
             </p>
           </div>
 
           <div className="grid grid-cols-2 gap-3">
             <div className="space-y-2">
-              <Label>اسم الموقع الأصلي (اختياري)</Label>
+              <Label>Site Name (optional)</Label>
               <Input value={form.siteName} onChange={e => setForm({ ...form, siteName: e.target.value })} placeholder="CNN" />
             </div>
             <div className="space-y-2">
-              <Label>رابط الموقع (اختياري)</Label>
+              <Label>Site URL (optional)</Label>
               <Input value={form.siteUrl} onChange={e => setForm({ ...form, siteUrl: e.target.value })} dir="ltr" placeholder="https://cnn.com" />
             </div>
           </div>
 
           <div className="grid grid-cols-2 gap-3">
             <div className="space-y-2">
-              <Label>الكاتيجوري</Label>
+              <Label>Category</Label>
               <Select value={form.categoryId || 'none'} onValueChange={v => setForm({ ...form, categoryId: v === 'none' ? '' : v })}>
                 <SelectTrigger><SelectValue placeholder="—" /></SelectTrigger>
                 <SelectContent>
@@ -407,7 +454,7 @@ function RssSourceEditor({
               </Select>
             </div>
             <div className="space-y-2">
-              <Label>اللغة</Label>
+              <Label>Language</Label>
               <Select value={form.language} onValueChange={v => setForm({ ...form, language: v })}>
                 <SelectTrigger><SelectValue /></SelectTrigger>
                 <SelectContent>
@@ -423,11 +470,11 @@ function RssSourceEditor({
           {/* AI Settings */}
           <div className="p-4 bg-gradient-to-br from-purple-50 to-indigo-50 rounded-lg space-y-3 border border-purple-200">
             <h4 className="font-semibold text-purple-900 flex items-center gap-2">
-              <Zap className="h-4 w-4" /> إعدادات AI لإعادة الصياغة
+              <Zap className="h-4 w-4" /> AI Rewrite Settings
             </h4>
             <div className="grid grid-cols-2 gap-3">
               <div className="space-y-2">
-                <Label>أسلوب الكتابة (Tone)</Label>
+                <Label>Writing Tone</Label>
                 <Select value={form.aiTone} onValueChange={v => setForm({ ...form, aiTone: v })}>
                   <SelectTrigger><SelectValue /></SelectTrigger>
                   <SelectContent>
@@ -439,7 +486,7 @@ function RssSourceEditor({
                 <p className="text-xs text-purple-700">{toneDescriptions[form.aiTone]}</p>
               </div>
               <div className="space-y-2">
-                <Label>الطول</Label>
+                <Label>Length</Label>
                 <Select value={form.aiLength} onValueChange={v => setForm({ ...form, aiLength: v })}>
                   <SelectTrigger><SelectValue /></SelectTrigger>
                   <SelectContent>
@@ -455,41 +502,41 @@ function RssSourceEditor({
           {/* Image Settings */}
           <div className="p-4 bg-gradient-to-br from-cyan-50 to-blue-50 rounded-lg space-y-3 border border-cyan-200">
             <h4 className="font-semibold text-cyan-900 flex items-center gap-2">
-              <Globe className="h-4 w-4" /> إعدادات الصور
+              <Globe className="h-4 w-4" /> Image Settings
             </h4>
             <div className="flex items-center gap-2">
               <Switch checked={form.includeImages} onCheckedChange={v => setForm({ ...form, includeImages: v })} id="inc-img" />
-              <Label htmlFor="inc-img">جلب الصور من المقال الأصلي</Label>
+              <Label htmlFor="inc-img">Fetch images from original article</Label>
             </div>
             <div className="flex items-center gap-2">
               <Switch checked={form.watermarkImages} onCheckedChange={v => setForm({ ...form, watermarkImages: v })} id="wm-img" />
-              <Label htmlFor="wm-img">إضافة علامة مائية (اسم موقعك) على كل صورة</Label>
+              <Label htmlFor="wm-img">Add watermark (your site name) on each image</Label>
             </div>
           </div>
 
           {/* Schedule + Publishing */}
           <div className="grid grid-cols-2 gap-3">
             <div className="space-y-2">
-              <Label>فترة الجلب (دقائق)</Label>
+              <Label>Fetch Interval (minutes)</Label>
               <Input type="number" min={5} max={1440} value={form.fetchInterval} onChange={e => setForm({ ...form, fetchInterval: parseInt(e.target.value) || 60 })} />
             </div>
             <div className="flex items-end pb-2">
               <div className="flex items-center gap-2">
                 <Switch checked={form.autoPublish} onCheckedChange={v => setForm({ ...form, autoPublish: v })} id="auto-pub" />
-                <Label htmlFor="auto-pub">نشر تلقائي (بدون مراجعة)</Label>
+                <Label htmlFor="auto-pub">Auto-publish (no review)</Label>
               </div>
             </div>
           </div>
 
           <div className="flex items-center gap-2 p-3 bg-slate-50 rounded-lg">
             <Switch checked={form.isActive} onCheckedChange={v => setForm({ ...form, isActive: v })} id="active" />
-            <Label htmlFor="active">المصدر نشط (سيتم جلب الأخبار منه)</Label>
+            <Label htmlFor="active">Source active (news will be fetched)</Label>
           </div>
 
           <div className="flex gap-2 justify-end pt-2">
-            <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>إلغاء</Button>
+            <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>Cancel</Button>
             <Button type="submit" disabled={saving}>
-              {saving ? 'جاري الحفظ...' : source ? 'حفظ' : 'إضافة'}
+              {saving ? 'جاري الSave...' : source ? 'Save' : 'Add'}
             </Button>
           </div>
         </form>

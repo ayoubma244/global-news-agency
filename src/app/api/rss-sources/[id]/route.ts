@@ -68,13 +68,21 @@ export async function DELETE(req: NextRequest, { params }: { params: Promise<{ i
 
 export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   const admin = await getCurrentAdmin()
-  if (!admin) return NextResponse.json({ ok: false, error: 'غير مصرح' }, { status: 401 })
+  if (!admin) return NextResponse.json({ ok: false, error: 'Unauthorized' }, { status: 401 })
 
   const { id } = await params
   const body = await req.json()
+
+  // Support toggling isActive OR autoPublish
+  const updateData: any = {}
+  if (body.isActive !== undefined) updateData.isActive = !!body.isActive
+  if (body.autoPublish !== undefined) updateData.autoPublish = !!body.autoPublish
+  if (body.includeImages !== undefined) updateData.includeImages = !!body.includeImages
+  if (body.watermarkImages !== undefined) updateData.watermarkImages = !!body.watermarkImages
+
   const source = await db.rssSource.update({
     where: { id },
-    data: { isActive: !!body.isActive },
+    data: updateData,
   })
   return NextResponse.json({ ok: true, source })
 }

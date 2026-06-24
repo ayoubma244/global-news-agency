@@ -299,7 +299,7 @@ async function processItem(
       categoryId: categoryId,
       sourceUrl: item.link,
       sourceName: source.siteName || source.name,
-      author: 'Automated System',
+      author: 'Editorial Team',
       status,
       isBreaking: source.aiTone === 'breaking' && !aiFailed,
       isFeatured: false,
