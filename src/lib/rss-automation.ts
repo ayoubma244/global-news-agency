@@ -390,11 +390,18 @@ async function processItem(
         result.imagesProcessed++
       }
 
-      // Set featured image on article
+      // Set featured image on article - use stored URL or fall back to original
       if (processedImages.length > 0) {
+        const featuredImg = processedImages[0].storedUrl || processedImages[0].originalUrl
         await db.article.update({
           where: { id: article.id },
-          data: { featuredImg: processedImages[0].storedUrl },
+          data: { featuredImg },
+        })
+      } else if (item.images.length > 0) {
+        // If watermarking failed, use original image URL
+        await db.article.update({
+          where: { id: article.id },
+          data: { featuredImg: item.images[0] },
         })
       }
 

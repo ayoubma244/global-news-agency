@@ -54,7 +54,7 @@ export default async function CategoryPage({ params }: { params: Promise<{ slug:
           </Link>
           <Link href="/" className="flex items-center gap-1 text-sm text-slate-600 hover:text-slate-900">
             <ChevronLeft className="h-4 w-4" />
-            الرئيسية
+            Home
           </Link>
         </div>
       </header>
@@ -124,7 +124,7 @@ export default async function CategoryPage({ params }: { params: Promise<{ slug:
         {articles.length === 0 && (
           <div className="text-center py-12 text-slate-500">
             <Newspaper className="h-12 w-12 mx-auto mb-2 opacity-30" />
-            <p>لا توجد مقالات في هذا القسم بعد</p>
+            <p>No articles in this section yet</p>
           </div>
         )}
       </main>
@@ -132,7 +132,7 @@ export default async function CategoryPage({ params }: { params: Promise<{ slug:
       {/* Footer */}
       <footer className="bg-slate-900 text-slate-400 mt-12">
         <div className="max-w-7xl mx-auto px-4 py-6 text-center text-xs">
-          © 2026 {siteName}. جميع الحقوق محفوظة.
+          © 2026 {siteName}. All rights reserved.
         </div>
       </footer>
     </div>

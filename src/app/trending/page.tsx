@@ -51,7 +51,7 @@ export default async function TrendingPage() {
             <span className="font-bold text-slate-900">{siteName}</span>
           </Link>
           <Link href="/" className="flex items-center gap-1 text-sm text-slate-600 hover:text-slate-900">
-            <ChevronLeft className="h-4 w-4" /> الرئيسية
+            <ChevronLeft className="h-4 w-4" /> Home
           </Link>
         </div>
       </header>
@@ -71,7 +71,7 @@ export default async function TrendingPage() {
               رائج اليوم (24 ساعة)
             </h2>
             {trending24h.length === 0 ? (
-              <p className="text-slate-500 text-sm">لا توجد أخبار رائجة اليوم</p>
+              <p className="text-slate-500 text-sm">No trending news today</p>
             ) : (
               <div className="space-y-3">
                 {trending24h.map((a, i) => (
@@ -84,7 +84,7 @@ export default async function TrendingPage() {
                         <div className="flex items-center gap-2 mt-1 text-xs text-slate-500">
                           <span>{a.category?.icon} {a.category?.nameAr}</span>
                           <span>•</span>
-                          <span className="flex items-center gap-1"><Flame className="h-3 w-3" /> {a.views} مشاهدة</span>
+                          <span className="flex items-center gap-1"><Flame className="h-3 w-3" /> {a.views} views</span>
                         </div>
                       </div>
                     </div>
@@ -101,7 +101,7 @@ export default async function TrendingPage() {
               الأكثر قراءة هذا الأسبوع
             </h2>
             {popular7d.length === 0 ? (
-              <p className="text-slate-500 text-sm">لا توجد أخبار هذا الأسبوع</p>
+              <p className="text-slate-500 text-sm">No news this week</p>
             ) : (
               <div className="space-y-3">
                 {popular7d.map((a, i) => (
@@ -113,7 +113,7 @@ export default async function TrendingPage() {
                         <div className="flex items-center gap-2 mt-1 text-xs text-slate-500">
                           <span>{a.category?.icon} {a.category?.nameAr}</span>
                           <span>•</span>
-                          <span>{a.views} مشاهدة</span>
+                          <span>{a.views} views</span>
                         </div>
                       </div>
                     </div>
@@ -150,7 +150,7 @@ export default async function TrendingPage() {
 
       <footer className="bg-slate-900 text-slate-400 mt-12">
         <div className="max-w-7xl mx-auto px-4 py-6 text-center text-xs">
-          © 2026 {siteName}. جميع الحقوق محفوظة.
+          © 2026 {siteName}. All rights reserved.
         </div>
       </footer>
     </div>

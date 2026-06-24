@@ -205,19 +205,26 @@ Return ONLY valid JSON with this exact structure:
  * Fallback: simple rewrite without AI (just structure the source).
  */
 function fallbackRewrite(source: RssItem, tone: AiTone, length: AiLength, siteName: string): RewriteResult {
-  const cleanContent = stripHtml(source.content).slice(0, 2000) || source.summary
-  const bodyAr = `[${source.author || 'مصدر خارجي'}] ${cleanContent}\n\nالمصدر: ${siteName} نقلاً عن ${getDomain(source.link)}`
+  const cleanContent = stripHtml(source.content).slice(0, 3000) || source.summary || source.title
+
+  // Format content as proper paragraphs
+  const paragraphs = cleanContent.split(/\.\s+/).filter(p => p.length > 20).slice(0, 7)
+  const formattedBody = paragraphs.length > 0
+    ? paragraphs.map(p => p.trim() + '.').join('\n\n')
+    : cleanContent
+
+  const bodyAr = `${formattedBody}\n\n---\n\nSource: ${siteName} via ${getDomain(source.link)}`
 
   return {
     titleAr: source.title,
     titleEn: source.title,
-    leadAr: source.summary,
-    leadEn: source.summary,
+    leadAr: source.summary || source.title,
+    leadEn: source.summary || source.title,
     bodyAr,
-    bodyEn: cleanContent,
-    excerpt: source.summary.slice(0, 160),
+    bodyEn: formattedBody,
+    excerpt: (source.summary || source.title).slice(0, 160),
     seoTitle: source.title.slice(0, 60),
-    seoDescription: source.summary.slice(0, 160),
+    seoDescription: (source.summary || source.title).slice(0, 160),
     seoKeywords: '',
     tags: [],
     plagiarismScore: 80, // high because no rewrite

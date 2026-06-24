@@ -201,7 +201,7 @@ export default async function ArticlePage({ params }: { params: Promise<{ slug: 
                 <span>بقلم: <strong className="text-slate-700">{article.author}</strong></span>
               )}
               {article.sourceName && (
-                <span>المصدر: {article.sourceName}</span>
+                <span>Source: {article.sourceName}</span>
               )}
               <span className="flex items-center gap-1">
                 <Clock className="h-4 w-4" />
@@ -214,7 +214,7 @@ export default async function ArticlePage({ params }: { params: Promise<{ slug: 
               </span>
             </div>
             <button className="flex items-center gap-1 text-sm text-slate-500 hover:text-slate-900">
-              <Share2 className="h-4 w-4" /> مشاركة
+              <Share2 className="h-4 w-4" /> Share
             </button>
           </div>
 
@@ -317,7 +317,7 @@ export default async function ArticlePage({ params }: { params: Promise<{ slug: 
       {/* Footer */}
       <footer className="bg-slate-900 text-slate-400 mt-12">
         <div className="max-w-7xl mx-auto px-4 py-6 text-center text-xs">
-          © 2026 {siteName}. جميع الحقوق محفوظة.
+          © 2026 {siteName}. All rights reserved.
         </div>
       </footer>
     </div>

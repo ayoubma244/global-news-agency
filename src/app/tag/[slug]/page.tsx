@@ -42,7 +42,7 @@ export default async function TagPage({ params }: { params: Promise<{ slug: stri
             <span className="font-bold text-slate-900">{siteName}</span>
           </Link>
           <Link href="/" className="flex items-center gap-1 text-sm text-slate-600 hover:text-slate-900">
-            <ChevronLeft className="h-4 w-4" /> الرئيسية
+            <ChevronLeft className="h-4 w-4" /> Home
           </Link>
         </div>
       </header>
@@ -89,14 +89,14 @@ export default async function TagPage({ params }: { params: Promise<{ slug: stri
         {articles.length === 0 && (
           <div className="text-center py-12 text-slate-500">
             <TagIcon className="h-12 w-12 mx-auto mb-2 opacity-30" />
-            <p>لا توجد مقالات بهذا الوسم</p>
+            <p>No articles with this tag</p>
           </div>
         )}
       </main>
 
       <footer className="bg-slate-900 text-slate-400 mt-12">
         <div className="max-w-7xl mx-auto px-4 py-6 text-center text-xs">
-          © 2026 {siteName}. جميع الحقوق محفوظة.
+          © 2026 {siteName}. All rights reserved.
         </div>
       </footer>
     </div>

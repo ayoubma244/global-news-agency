@@ -72,7 +72,7 @@ export default function SearchPage() {
           </Link>
           <Link href="/" className="flex items-center gap-1 text-sm text-slate-600 hover:text-slate-900">
             <ArrowLeft className="h-4 w-4" />
-            الرئيسية
+            Home
           </Link>
         </div>
       </header>
@@ -89,7 +89,7 @@ export default function SearchPage() {
             <Input
               value={q}
               onChange={e => setQ(e.target.value)}
-              placeholder="ابحث في الأخبار..."
+              placeholder="Search news..."
               className="pr-12 h-14 text-lg"
               autoFocus
             />
@@ -137,15 +137,15 @@ export default function SearchPage() {
         {searched && !loading && results.length === 0 && (
           <div className="text-center py-12 text-slate-500">
             <SearchIcon className="h-12 w-12 mx-auto mb-2 opacity-30" />
-            <p>لا توجد نتائج لـ «{q}»</p>
-            <p className="text-xs mt-1">جرب كلمات أخرى أو ابحث بدون تشكيل</p>
+            <p>No results for «{q}»</p>
+            <p className="text-xs mt-1">Try different keywords</p>
           </div>
         )}
       </main>
 
       <footer className="bg-slate-900 text-slate-400 mt-12">
         <div className="max-w-7xl mx-auto px-4 py-6 text-center text-xs">
-          © 2026 وكالة الأنباء العالمية. جميع الحقوق محفوظة.
+          © 2026 Global News Agency. All rights reserved.
         </div>
       </footer>
     </div>
