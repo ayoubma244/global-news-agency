@@ -1,6 +1,6 @@
 /**
- * GET /api/automation/logs
- * Returns recent automation logs (last 100).
+ * GET /api/activity
+ * Returns activity logs for admin.
  */
 import { NextRequest, NextResponse } from 'next/server'
 import { db } from '@/lib/db'
@@ -13,22 +13,18 @@ export async function GET(req: NextRequest) {
 
   const { searchParams } = new URL(req.url)
   const limit = parseInt(searchParams.get('limit') || '100')
-  const stage = searchParams.get('stage')
+  const entity = searchParams.get('entity')
+  const action = searchParams.get('action')
 
   const where: any = {}
-  if (stage) where.stage = stage
+  if (entity) where.entity = entity
+  if (action) where.action = action
 
-  const logs = await prisma.automationLog.findMany({
+  const logs = await prisma.activityLog.findMany({
     where,
     orderBy: { createdAt: 'desc' },
     take: limit,
   })
 
-  // Get stats
-  const stats = await prisma.automationLog.groupBy({
-    by: ['stage', 'status'],
-    _count: true,
-  })
-
-  return NextResponse.json({ ok: true, logs, stats })
+  return NextResponse.json({ ok: true, logs })
 }

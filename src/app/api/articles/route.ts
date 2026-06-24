@@ -4,11 +4,10 @@
  * POST - create
  */
 import { NextRequest, NextResponse } from 'next/server'
-import { PrismaClient } from '@prisma/client'
+import { db } from '@/lib/db'
 import { getCurrentAdmin } from '@/lib/auth'
 
-const prisma = new PrismaClient()
-
+const prisma = db
 export async function GET(req: NextRequest) {
   const { searchParams } = new URL(req.url)
   const status = searchParams.get('status')

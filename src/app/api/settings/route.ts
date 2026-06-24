@@ -4,12 +4,11 @@
  * PUT  - bulk update
  */
 import { NextRequest, NextResponse } from 'next/server'
-import { PrismaClient } from '@prisma/client'
+import { db } from '@/lib/db'
 import { getCurrentAdmin } from '@/lib/auth'
 import { getDefaultSettings } from '@/lib/settings'
 
-const prisma = new PrismaClient()
-
+const prisma = db
 export async function GET() {
   const [rows, defaults] = await Promise.all([
     prisma.setting.findMany(),

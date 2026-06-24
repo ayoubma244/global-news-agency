@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Geist } from "next/font/google";
 import "./globals.css";
 import { Toaster } from "@/components/ui/toaster";
@@ -10,10 +10,68 @@ const geistSans = Geist({
 });
 
 export const metadata: Metadata = {
-  title: "وكالة الأنباء العالمية | Global News Agency",
-  description: "موقع إخباري آلي يغطي العالم بأربع لغات على مدار الساعة - أخبار السياسة والاقتصاد والرياضة والتكنولوجيا",
-  keywords: ["أخبار", "news", "عالمية", "سياسة", "اقتصاد", "رياضة", "تكنولوجيا"],
+  metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000'),
+  title: {
+    default: "وكالة الأنباء العالمية | Global News Agency",
+    template: "%s | وكالة الأنباء العالمية",
+  },
+  description: "موقع إخباري آلي يغطي العالم بأربع لغات على مدار الساعة - أخبار السياسة والاقتصاد والرياضة والتكنولوجيا والصحة",
+  keywords: ["أخبار", "news", "عالمية", "سياسة", "اقتصاد", "رياضة", "تكنولوجيا", "صحة", "كرة قدم", "أسعار"],
   authors: [{ name: "Global News Agency" }],
+  creator: "Global News Agency",
+  publisher: "Global News Agency",
+  manifest: "/manifest.json",
+  applicationName: "وكالة الأنباء العالمية",
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: "black-translucent",
+    title: "Global News",
+  },
+  formatDetection: {
+    telephone: false,
+    address: false,
+    email: false,
+  },
+  openGraph: {
+    type: "website",
+    locale: "ar_AR",
+    alternateLocale: ["en_US", "fr_FR", "es_ES"],
+    url: "/",
+    siteName: "وكالة الأنباء العالمية",
+    title: "وكالة الأنباء العالمية | Global News Agency",
+    description: "موقع إخباري آلي يغطي العالم بأربع لغات على مدار الساعة",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "وكالة الأنباء العالمية",
+    description: "آخر أخبار العالم في السياسة والاقتصاد والرياضة والتكنولوجيا",
+  },
+  robots: {
+    index: true,
+    follow: true,
+    googleBot: {
+      index: true,
+      follow: true,
+      "max-image-preview": "large",
+      "max-snippet": -1,
+      "max-video-preview": -1,
+    },
+  },
+  alternates: {
+    types: {
+      'application/rss+xml': '/rss',
+    },
+  },
+};
+
+export const viewport: Viewport = {
+  themeColor: [
+    { media: "(prefers-color-scheme: light)", color: "#1B2A4A" },
+    { media: "(prefers-color-scheme: dark)", color: "#0f172a" },
+  ],
+  width: "device-width",
+  initialScale: 1,
+  maximumScale: 5,
 };
 
 export default function RootLayout({

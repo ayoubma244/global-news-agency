@@ -2,10 +2,8 @@
  * /api/status - public site status (no auth)
  */
 import { NextResponse } from 'next/server'
-import { PrismaClient } from '@prisma/client'
-
-const prisma = new PrismaClient()
-
+import { db } from '@/lib/db'
+const prisma = db
 export async function GET() {
   const [installLock, catCount, articleCount, pageCount] = await Promise.all([
     prisma.installLock.findFirst(),

@@ -79,6 +79,8 @@ model Article {
   updatedAt   DateTime @updatedAt
 
   category Category @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+  viewEvents ArticleView[]
+  tags      ArticleTag[]
 }
 
 // ===== Pages (CMS) =====
@@ -147,4 +149,86 @@ model InstallLock {
   installedAt  DateTime?
   version      String   @default("1.0.0")
   adminUserId  String?
+}
+
+// ===== Tags =====
+model Tag {
+  id        String   @id @default(cuid())
+  slug      String   @unique
+  name      String
+  count     Int      @default(0)
+  createdAt DateTime @default(now())
+
+  articles ArticleTag[]
+}
+
+model ArticleTag {
+  articleId String
+  tagId     String
+  article   Article @relation(fields: [articleId], references: [id], onDelete: Cascade)
+  tag       Tag     @relation(fields: [tagId], references: [id], onDelete: Cascade)
+
+  @@id([articleId, tagId])
+}
+
+// ===== Newsletter Subscribers =====
+model Subscriber {
+  id          String   @id @default(cuid())
+  email       String   @unique
+  name        String?
+  isVerified  Boolean  @default(false)
+  verifyToken String?
+  preferences String?  // JSON of category IDs
+  language    String   @default("ar")
+  isActive    Boolean  @default(true)
+  subscribedAt DateTime @default(now())
+  unsubscribedAt DateTime?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+// ===== Activity Logs (Audit Trail) =====
+model ActivityLog {
+  id        String   @id @default(cuid())
+  adminId   String?
+  adminName String?
+  action    String   // create | update | delete | login | logout | publish | etc.
+  entity    String   // article | category | page | setting | api_key | admin
+  entityId  String?
+  entityName String?
+  details   String?  // JSON
+  ipAddress String?
+  userAgent String?
+  createdAt DateTime @default(now())
+}
+
+// ===== Scheduled Jobs =====
+model ScheduledJob {
+  id          String   @id @default(cuid())
+  name        String
+  type        String   // automation_run | newsletter_send | sitemap_ping | etc.
+  cron        String   // e.g. "0 * * * *" (every hour)
+  isActive    Boolean  @default(true)
+  lastRunAt   DateTime?
+  nextRunAt   DateTime?
+  lastStatus  String?  // success | error
+  lastError   String?
+  runCount    Int      @default(0)
+  config      String?  // JSON of options
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+// ===== Article Views (for analytics) =====
+model ArticleView {
+  id        String   @id @default(cuid())
+  articleId String
+  article   Article  @relation(fields: [articleId], references: [id], onDelete: Cascade)
+  viewedAt  DateTime @default(now())
+  country   String?
+  device    String?  // mobile | desktop | tablet
+  source    String?  // direct | search | social | referral
+
+  @@index([articleId])
+  @@index([viewedAt])
 }

@@ -3,10 +3,50 @@ import Link from 'next/link'
 import { notFound } from 'next/navigation'
 import { Newspaper, Eye, Clock, ChevronLeft, Share2, Tag } from 'lucide-react'
 import { getAllSettings } from '@/lib/settings'
+import type { Metadata } from 'next'
 
 const prisma = new PrismaClient()
 
 export const dynamic = 'force-dynamic'
+
+export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }): Promise<Metadata> {
+  const { slug } = await params
+  const article = await prisma.article.findUnique({
+    where: { slug },
+    include: { category: true },
+  })
+  if (!article) return { title: 'مقال غير موجود' }
+
+  const base = process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000'
+  const url = `${base}/article/${article.slug}`
+
+  return {
+    title: article.seoTitle || article.titleAr,
+    description: article.seoDescription || article.excerpt || article.leadAr || '',
+    keywords: article.seoKeywords?.split(',').map(k => k.trim()),
+    authors: article.author ? [{ name: article.author }] : undefined,
+    alternates: {
+      canonical: url,
+    },
+    openGraph: {
+      type: 'article',
+      url,
+      title: article.titleAr,
+      description: article.leadAr || article.excerpt || '',
+      publishedTime: article.publishedAt?.toISOString() || article.createdAt.toISOString(),
+      modifiedTime: article.updatedAt.toISOString(),
+      authors: article.author ? [article.author] : undefined,
+      images: article.featuredImg ? [{ url: article.featuredImg }] : [],
+      tags: article.seoKeywords?.split(',').map(k => k.trim()),
+    },
+    twitter: {
+      card: 'summary_large_image',
+      title: article.titleAr,
+      description: article.leadAr || article.excerpt || '',
+      images: article.featuredImg ? [article.featuredImg] : [],
+    },
+  }
+}
 
 export default async function ArticlePage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params
@@ -17,11 +57,18 @@ export default async function ArticlePage({ params }: { params: Promise<{ slug: 
 
   if (!article) notFound()
 
-  // Increment views
-  await prisma.article.update({
-    where: { id: article.id },
-    data: { views: { increment: 1 } },
-  })
+  // Increment views + log view event
+  await Promise.all([
+    prisma.article.update({
+      where: { id: article.id },
+      data: { views: { increment: 1 } },
+    }),
+    prisma.articleView.create({
+      data: {
+        articleId: article.id,
+      },
+    }).catch(() => null), // ignore errors
+  ])
 
   // Related articles
   const related = await prisma.article.findMany({
@@ -37,9 +84,45 @@ export default async function ArticlePage({ params }: { params: Promise<{ slug: 
 
   const settings = await getAllSettings()
   const siteName = settings.site_name || 'وكالة الأنباء العالمية'
+  const base = process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000'
+
+  // JSON-LD structured data
+  const jsonLd = {
+    '@context': 'https://schema.org',
+    '@type': 'NewsArticle',
+    headline: article.titleAr,
+    description: article.leadAr || article.excerpt,
+    image: article.featuredImg ? [article.featuredImg] : undefined,
+    datePublished: article.publishedAt?.toISOString() || article.createdAt.toISOString(),
+    dateModified: article.updatedAt.toISOString(),
+    author: {
+      '@type': 'Organization',
+      name: article.author || siteName,
+    },
+    publisher: {
+      '@type': 'Organization',
+      name: siteName,
+      logo: {
+        '@type': 'ImageObject',
+        url: `${base}/logo.png`,
+      },
+    },
+    mainEntityOfPage: {
+      '@type': 'WebPage',
+      '@id': `${base}/article/${article.slug}`,
+    },
+    articleSection: article.category?.nameAr,
+    keywords: article.seoKeywords,
+  }
 
   return (
     <div className="min-h-screen flex flex-col bg-white" dir="rtl">
+      {/* JSON-LD Structured Data */}
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+      />
+
       {/* Header */}
       <header className="bg-white border-b border-slate-200 sticky top-0 z-30">
         <div className="max-w-7xl mx-auto px-4 py-3 flex items-center justify-between">

@@ -1,9 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { PrismaClient } from '@prisma/client'
+import { db } from '@/lib/db'
 import { getCurrentAdmin } from '@/lib/auth'
 
-const prisma = new PrismaClient()
-
+const prisma = db
 function maskKey(key: string): string {
   if (key.length <= 8) return '****'
   return key.slice(0, 4) + '...' + key.slice(-4)

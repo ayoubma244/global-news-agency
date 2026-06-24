@@ -3,12 +3,11 @@
  * Returns automation system status: AI configured, last run, success rate.
  */
 import { NextResponse } from 'next/server'
-import { PrismaClient } from '@prisma/client'
+import { db } from '@/lib/db'
 import { getCurrentAdmin } from '@/lib/auth'
 import { isAIConfigured } from '@/lib/zai'
 
-const prisma = new PrismaClient()
-
+const prisma = db
 export async function GET() {
   const admin = await getCurrentAdmin()
   if (!admin) return NextResponse.json({ ok: false, error: 'غير مصرح' }, { status: 401 })

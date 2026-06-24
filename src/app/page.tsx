@@ -1,7 +1,8 @@
 import { PrismaClient } from '@prisma/client'
 import Link from 'next/link'
-import { Newspaper, Clock, Eye, TrendingUp, AlertCircle } from 'lucide-react'
+import { Newspaper, Clock, Eye, TrendingUp, AlertCircle, Search, Rss } from 'lucide-react'
 import { getAllSettings, isInstalled } from '@/lib/settings'
+import NewsletterForm from '@/components/newsletter-form'
 
 const prisma = new PrismaClient()
 
@@ -97,9 +98,26 @@ export default async function HomePage() {
                 <p className="text-xs text-slate-500">{siteTagline}</p>
               </div>
             </Link>
-            <div className="hidden md:flex items-center gap-2 text-xs text-slate-500">
-              <TrendingUp className="h-4 w-4" />
-              <span>آخر تحديث: {new Date().toLocaleTimeString('ar-EG', { hour: '2-digit', minute: '2-digit' })}</span>
+            <div className="flex items-center gap-3">
+              <Link
+                href="/search"
+                className="flex items-center gap-2 px-4 py-2 bg-slate-100 hover:bg-slate-200 rounded-lg text-sm text-slate-600 transition-colors"
+              >
+                <Search className="h-4 w-4" />
+                <span className="hidden sm:inline">بحث...</span>
+              </Link>
+              <a
+                href="/rss"
+                className="flex items-center gap-1 px-3 py-2 bg-orange-500 hover:bg-orange-600 text-white rounded-lg text-sm transition-colors"
+                title="RSS Feed"
+              >
+                <Rss className="h-4 w-4" />
+                <span className="hidden sm:inline">RSS</span>
+              </a>
+              <div className="hidden md:flex items-center gap-2 text-xs text-slate-500">
+                <TrendingUp className="h-4 w-4" />
+                <span>آخر تحديث: {new Date().toLocaleTimeString('ar-EG', { hour: '2-digit', minute: '2-digit' })}</span>
+              </div>
             </div>
           </div>
 
@@ -256,6 +274,13 @@ export default async function HomePage() {
 
       {/* Footer */}
       <footer className="bg-slate-900 text-slate-400 mt-12">
+        {/* Newsletter section */}
+        <div className="border-b border-slate-800">
+          <div className="max-w-7xl mx-auto px-4 py-8">
+            <NewsletterForm />
+          </div>
+        </div>
+
         <div className="max-w-7xl mx-auto px-4 py-8">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             <div>
@@ -269,9 +294,12 @@ export default async function HomePage() {
               <h3 className="text-white font-semibold mb-3">روابط سريعة</h3>
               <ul className="space-y-1 text-sm">
                 <li><Link href="/" className="hover:text-white">الرئيسية</Link></li>
+                <li><Link href="/search" className="hover:text-white">بحث</Link></li>
                 {pages.map(p => (
                   <li key={p.id}><Link href={`/${p.slug}`} className="hover:text-white">{p.titleAr}</Link></li>
                 ))}
+                <li><a href="/rss" className="hover:text-white">RSS Feed</a></li>
+                <li><a href="/sitemap.xml" className="hover:text-white">Sitemap</a></li>
               </ul>
             </div>
             <div>
@@ -285,7 +313,7 @@ export default async function HomePage() {
             </div>
           </div>
           <div className="border-t border-slate-800 mt-6 pt-6 text-center text-xs">
-            © 2026 {siteName}. جميع الحقوق محفوظة. Powered by Automated News Platform v1.0.0
+            © 2026 {siteName}. جميع الحقوق محفوظة. Powered by Automated News Platform v2.0.0
           </div>
         </div>
       </footer>

@@ -1,9 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { PrismaClient } from '@prisma/client'
+import { db } from '@/lib/db'
 import { getCurrentAdmin } from '@/lib/auth'
 
-const prisma = new PrismaClient()
-
+const prisma = db
 export async function GET(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   const { id } = await params
   let page = await prisma.page.findUnique({ where: { id } })
