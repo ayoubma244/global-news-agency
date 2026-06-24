@@ -1,14 +1,5 @@
 /**
  * AI Rewriter — uses Z.ai GLM to rewrite articles in a human-like style.
- *
- * Features:
- * - 5 tone profiles (professional, casual, analytical, breaking, story)
- * - 3 length presets (short, medium, long)
- * - 4 language outputs (ar, en, fr, es)
- * - Plagiarism reduction (paraphrase + restructure)
- * - Human-like writing (varied sentence length, transitions, anecdotes)
- * - SEO optimization built-in
- * - Quality scoring (plagiarism + humanScore)
  */
 
 import { getZAI, isAIConfigured } from '@/lib/zai'
@@ -30,46 +21,27 @@ export interface RewriteResult {
   seoDescription: string
   seoKeywords: string
   tags: string[]
-  plagiarismScore: number  // 0-100 (lower = more unique)
-  humanScore: number       // 0-100 (higher = more human-like)
-  qualityScore: number     // 0-100 (overall)
+  plagiarismScore: number
+  humanScore: number
+  qualityScore: number
   model: string
   tokensUsed?: number
 }
 
-const TONE_PROFILES: Record<AiTone, { ar: string; en: string }> = {
-  professional: {
-    ar: 'احترافي إخباري رسمي - أسلوب الوكالات الإخبارية الكبرى (رويترز، فرانس برس). جمل قصيرة ومباشرة في البداية، ثم تفصيل. لغة محايدة بدون رأي.',
-    en: 'Professional news agency style (Reuters, AP). Short direct leads, then detail. Neutral tone, no opinion.',
-  },
-  casual: {
-    ar: 'أسلوب ودّي وعفوي - كما لو يكتب صديق يخبر صديقه بخبر. استخدم تعبيرات يومية، روح دعابة خفيفة عند المناسب، وضمير المخاطب أحياناً.',
-    en: 'Friendly conversational tone - as if telling a friend. Use everyday expressions, light humor, occasional direct address.',
-  },
-  analytical: {
-    ar: 'تحليلي معمّق - لا تكتفي بنقل الخبر بل حلّل الأسباب والتبعات. اربط بسياق أوسع، اقتبس خبراء (افتراضياً)، قارن بأحداث مشابهة.',
-    en: 'In-depth analytical - explain causes, consequences, broader context. Quote hypothetical experts, compare with similar events.',
-  },
-  breaking: {
-    ar: 'أسلوب الأخبار العاجلة - جمل قصيرة جداً ومكثفة. ابدأ بالحدث الأهم فوراً. استخدم كلمات قوية: «عاجل»، «حصري»، «لأول مرة». شعور بالإلحاح.',
-    en: 'Breaking news style - very short punchy sentences. Lead with most important fact. Use strong words: breaking, exclusive, first. Sense of urgency.',
-  },
-  story: {
-    ar: 'أسلوب القصّ الصحفي - ابدأ بقصة أو مشهد إنساني يلخّص الخبر. ثم اشرح السياق. استخدم لغة وصفية حيّة، تفاصيل صغيرة تجعل القارئ يعيش الحدث.',
-    en: 'Narrative journalism - open with a scene or human story, then explain context. Vivid descriptive language, small details that immerse reader.',
-  },
+const TONE_PROFILES: Record<AiTone, string> = {
+  professional: 'Professional news agency style (Reuters, AP). Short direct leads, then detail. Neutral tone.',
+  casual: 'Friendly conversational tone - as if telling a friend. Everyday expressions, light humor.',
+  analytical: 'In-depth analytical - explain causes, consequences, broader context. Quote experts, compare with similar events.',
+  breaking: 'Breaking news style - very short punchy sentences. Lead with most important fact. Sense of urgency.',
+  story: 'Narrative journalism - open with a scene or human story, then explain context. Vivid descriptive language.',
 }
 
 const LENGTH_PROFILES: Record<AiLength, { words: number; paragraphs: number }> = {
-  short: { words: 250, paragraphs: 3 },
-  medium: { words: 500, paragraphs: 5 },
-  long: { words: 800, paragraphs: 7 },
+  short: { words: 300, paragraphs: 4 },
+  medium: { words: 600, paragraphs: 6 },
+  long: { words: 1000, paragraphs: 8 },
 }
 
-/**
- * Rewrite an article using Z.ai GLM.
- * Returns Arabic primary content + English translation + SEO metadata + quality scores.
- */
 export async function rewriteArticle(
   source: RssItem,
   opts: {
@@ -82,11 +54,10 @@ export async function rewriteArticle(
 ): Promise<RewriteResult> {
   const tone = opts.tone || 'professional'
   const length = opts.length || 'medium'
-  const outputLang = opts.outputLang || 'ar'
-  const siteName = opts.siteName || 'وكالة الأنباء العالمية'
+  const outputLang = opts.outputLang || 'en'
+  const siteName = opts.siteName || 'Global News Agency'
   const categoryName = opts.categoryName || ''
 
-  // Fallback if AI not configured
   if (!isAIConfigured()) {
     return fallbackRewrite(source, tone, length, siteName)
   }
@@ -95,65 +66,52 @@ export async function rewriteArticle(
   const toneProfile = TONE_PROFILES[tone]
   const lengthProfile = LENGTH_PROFILES[length]
 
-  const systemPrompt = `You are a master news editor and writer with 20+ years of experience at top news agencies (Reuters, BBC, Al Jazeera). You write in ${outputLang === 'ar' ? 'Modern Standard Arabic (فصحى)' : outputLang}. 
+  const sourceContent = stripHtml(source.content).slice(0, 6000) || source.summary || source.title
 
-Your task: rewrite news articles to be 100% original (no copyright issues) while keeping all facts accurate. Make them read like a human wrote them - varied sentence lengths, natural transitions, occasional personal touches.
+  const systemPrompt = `You are a master news editor with 20+ years at Reuters, BBC, and AP. You rewrite news articles to be 100% original while keeping ALL facts accurate.
 
-Critical requirements:
-1. COMPLETELY rewrite - never copy phrases from source (avoid plagiarism)
-2. Keep ALL facts: names, numbers, dates, places, quotes (rephrase quotes' attribution)
-3. Write like a HUMAN: vary sentence length, use natural transitions, avoid robotic patterns
-4. Add value: context, analysis, or a fresh angle when possible
-5. NEVER mention "according to source" - rewrite as if it's your own reporting
-6. Always attribute the original source subtly at the end: «المصدر: ${siteName} نقلاً عن [original source name]»
-7. Output valid JSON only - no markdown, no explanation`
+CRITICAL RULES:
+1. COMPLETELY rewrite - never copy phrases from the source
+2. Keep ALL facts: names, numbers, dates, places, quotes
+3. Write ${lengthProfile.words} words minimum in ${lengthProfile.paragraphs} paragraphs
+4. The article MUST be substantial - at least ${lengthProfile.words} words
+5. DO NOT mention AI, automation, or that this is rewritten
+6. DO NOT add "Source:" or "According to" anywhere in the article
+7. Write as if YOU are the journalist reporting this news
+8. Use ${outputLang === 'ar' ? 'Modern Standard Arabic' : outputLang}
+9. Vary sentence length, use natural transitions
+10. Add context and analysis when possible
 
-  const userPrompt = `REWRITE THIS NEWS ARTICLE:
+Return ONLY valid JSON.`
 
-TITLE: ${source.title}
-${source.author ? `AUTHOR: ${source.author}` : ''}
-PUBLISHED: ${source.publishedAt}
-SOURCE URL: ${source.link}
+  const userPrompt = `Rewrite this news article. The output MUST be at least ${lengthProfile.words} words.
+
+ORIGINAL TITLE: ${source.title}
 CATEGORY: ${categoryName}
 SUMMARY: ${source.summary}
-FULL CONTENT: ${stripHtml(source.content).slice(0, 4000) || source.summary}
+FULL CONTENT: ${sourceContent}
 
-REQUIREMENTS:
-- Tone: ${toneProfile.ar}
-- Length: ~${lengthProfile.words} words, ${lengthProfile.paragraphs} paragraphs
-- Output language: ${outputLang === 'ar' ? 'Arabic (MSA)' : outputLang}
-- Target site: ${siteName}
+TONE: ${toneProfile}
+TARGET LENGTH: ${lengthProfile.words} words, ${lengthProfile.paragraphs} paragraphs
+LANGUAGE: ${outputLang === 'ar' ? 'Arabic (MSA)' : 'English'}
 
-CRITICAL PLAGIARISM AVOIDANCE:
-- Change sentence structure completely
-- Use synonyms and different vocabulary
-- Reorder information
-- Add transitional phrases
-- Vary paragraph openings (don't start two paragraphs the same way)
-- Add a unique angle or framing
+Write a COMPLETE, FULL-LENGTH article. Do not write a short summary. The body must be ${lengthProfile.words}+ words across ${lengthProfile.paragraphs} paragraphs.
 
-HUMAN-LIKE WRITING:
-- Mix short and long sentences (rhythm variation)
-- Use natural connectors (ولكن، في الوقت نفسه، الجدير بالذكر، من ناحية أخرى)
-- Include 1-2 rhetorical questions if appropriate
-- Add 1 brief contextual anecdote or comparison
-- End with a forward-looking sentence (ماذا بعد؟ / توقعات)
-
-Return ONLY valid JSON with this exact structure:
+Return ONLY this JSON:
 {
-  "titleAr": "العنوان بالعربية (50-80 حرف، جذاب، يحتوي كلمات مفتاحية)",
-  "titleEn": "English title (50-80 chars)",
-  "leadAr": "مقدمة قوية من 2-3 جمل تجذب القارئ",
+  "titleAr": "Title in ${outputLang === 'ar' ? 'Arabic' : 'same language'}",
+  "titleEn": "English title",
+  "leadAr": "Strong 2-3 sentence lead paragraph",
   "leadEn": "English lead",
-  "bodyAr": "المقال الكامل بـ ${lengthProfile.paragraphs} فقرات، افصل بين الفقرات بـ \\n\\n",
-  "bodyEn": "English body",
-  "excerpt": "ملخص قصير (160 حرف كحد أقصى)",
-  "seoTitle": "عنوان SEO (60 حرف كحد أقصى)",
-  "seoDescription": "وصف SEO (160 حرف كحد أقصى)",
-  "seoKeywords": "كلمة1, كلمة2, كلمة3, كلمة4, كلمة5",
-  "tags": ["وسم1", "وسم2", "وسم3"],
-  "plagiarismScore": 0-100 (estimation: 0=completely original, 100=identical to source),
-  "humanScore": 0-100 (estimation: 100=reads perfectly human)
+  "bodyAr": "FULL ARTICLE - ${lengthProfile.words}+ words, ${lengthProfile.paragraphs} paragraphs separated by \\n\\n",
+  "bodyEn": "English body (if different)",
+  "excerpt": "Short excerpt (max 160 chars)",
+  "seoTitle": "SEO title (max 60 chars)",
+  "seoDescription": "SEO description (max 160 chars)",
+  "seoKeywords": "keyword1, keyword2, keyword3, keyword4, keyword5",
+  "tags": ["tag1", "tag2", "tag3"],
+  "plagiarismScore": 15,
+  "humanScore": 90
 }`
 
   try {
@@ -162,8 +120,8 @@ Return ONLY valid JSON with this exact structure:
         { role: 'system', content: systemPrompt },
         { role: 'user', content: userPrompt },
       ],
-      temperature: 0.8,  // higher = more creative
-      max_tokens: 3000,
+      temperature: 0.7,
+      max_tokens: 4000,
     })
 
     const content = response?.choices?.[0]?.message?.content || '{}'
@@ -184,12 +142,11 @@ Return ONLY valid JSON with this exact structure:
       tags: parsed.tags || [],
       plagiarismScore: Math.min(100, Math.max(0, parsed.plagiarismScore || 15)),
       humanScore: Math.min(100, Math.max(0, parsed.humanScore || 90)),
-      qualityScore: 0, // computed below
+      qualityScore: 0,
       model: 'glm-4-flash',
       tokensUsed: response?.usage?.total_tokens,
     }
 
-    // Compute overall quality score
     result.qualityScore = Math.round(
       (result.humanScore * 0.6) + ((100 - result.plagiarismScore) * 0.4)
     )
@@ -201,33 +158,27 @@ Return ONLY valid JSON with this exact structure:
   }
 }
 
-/**
- * Fallback: simple rewrite without AI (just structure the source).
- */
 function fallbackRewrite(source: RssItem, tone: AiTone, length: AiLength, siteName: string): RewriteResult {
-  const cleanContent = stripHtml(source.content).slice(0, 3000) || source.summary || source.title
+  const cleanContent = stripHtml(source.content).slice(0, 5000) || source.summary || source.title
 
-  // Format content as proper paragraphs
-  const paragraphs = cleanContent.split(/\.\s+/).filter(p => p.length > 20).slice(0, 7)
+  const paragraphs = cleanContent.split(/\.\s+/).filter(p => p.length > 30).slice(0, 7)
   const formattedBody = paragraphs.length > 0
     ? paragraphs.map(p => p.trim() + '.').join('\n\n')
     : cleanContent
-
-  const bodyAr = `${formattedBody}\n\n---\n\nSource: ${siteName} via ${getDomain(source.link)}`
 
   return {
     titleAr: source.title,
     titleEn: source.title,
     leadAr: source.summary || source.title,
     leadEn: source.summary || source.title,
-    bodyAr,
+    bodyAr: formattedBody,
     bodyEn: formattedBody,
     excerpt: (source.summary || source.title).slice(0, 160),
     seoTitle: source.title.slice(0, 60),
     seoDescription: (source.summary || source.title).slice(0, 160),
     seoKeywords: '',
     tags: [],
-    plagiarismScore: 80, // high because no rewrite
+    plagiarismScore: 80,
     humanScore: 50,
     qualityScore: 40,
     model: 'fallback',

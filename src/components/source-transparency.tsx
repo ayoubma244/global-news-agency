@@ -114,8 +114,7 @@ export default function SourceTransparencyPanel({
       </div>
 
       <div className="mt-3 pt-3 border-t border-slate-200 text-xs text-slate-500">
-        This article was generated using AI from the source above and verified for accuracy.
-        Original content © {sourceName || 'original source'}.
+        Source: {sourceName || 'external source'}. All rights reserved by original publisher.
       </div>
     </div>
   )
