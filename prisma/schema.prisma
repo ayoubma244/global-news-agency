@@ -1,0 +1,150 @@
+// Prisma schema for Automated News Website
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+// ===== Admin Users =====
+model AdminUser {
+  id           String   @id @default(cuid())
+  username     String   @unique
+  email        String   @unique
+  passwordHash String
+  role         String   @default("admin") // admin | super_admin | editor
+  isActive     Boolean  @default(true)
+  lastLoginAt  DateTime?
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+}
+
+// ===== Categories (3-level hierarchy) =====
+model Category {
+  id          String   @id @default(cuid())
+  slug        String   @unique
+  nameAr      String
+  nameEn      String
+  nameFr      String
+  nameEs      String
+  icon        String?
+  description String?
+  parentId    String?  // null = main category; else points to parent
+  level       Int      @default(1) // 1=main, 2=sub, 3=sub-sub
+  order       Int      @default(0)
+  isActive    Boolean  @default(true)
+  priority    String   @default("Medium") // Breaking | High | Medium | Low
+  frequency   String?  // e.g. "8/day"
+  seoKeywords String?  // comma separated
+  tags        String?
+  dataSources String?
+  templateId  String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  parent   Category?  @relation("CategoryTree", fields: [parentId], references: [id], onDelete: Cascade)
+  children Category[] @relation("CategoryTree")
+  articles Article[]
+}
+
+// ===== Articles =====
+model Article {
+  id          String   @id @default(cuid())
+  slug        String   @unique
+  titleAr     String
+  titleEn     String?
+  leadAr      String?
+  leadEn      String?
+  bodyAr      String
+  bodyEn      String?
+  excerpt     String?
+  featuredImg String?
+  images      String?  // JSON array of image URLs
+  categoryId  String
+  sourceUrl   String?
+  sourceName  String?
+  author      String?
+  status      String   @default("draft") // draft | published | scheduled | archived
+  isBreaking  Boolean  @default(false)
+  isFeatured  Boolean  @default(false)
+  views       Int      @default(0)
+  shares      Int      @default(0)
+  seoTitle       String?
+  seoDescription String?
+  seoKeywords    String?
+  publishedAt DateTime?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  category Category @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+}
+
+// ===== Pages (CMS) =====
+model Page {
+  id          String   @id @default(cuid())
+  slug        String   @unique
+  titleAr     String
+  titleEn     String?
+  contentAr   String
+  contentEn   String?
+  template    String   @default("default") // default | about | contact | privacy | terms
+  isPublished Boolean  @default(true)
+  showInMenu  Boolean  @default(false)
+  order       Int      @default(0)
+  seoTitle       String?
+  seoDescription String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+// ===== Site Settings =====
+model Setting {
+  id    String @id @default(cuid())
+  key   String @unique
+  value String
+  type  String @default("text") // text | textarea | boolean | number | json | password
+  group String @default("general") // general | seo | social | api | theme | advanced
+  label String?
+  description String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+// ===== API Keys (for news aggregation) =====
+model ApiKey {
+  id         String   @id @default(cuid())
+  name       String
+  provider   String   // newsapi | openweather | google_trends | twitter | coingecko | etc.
+  apiKey     String
+  apiSecret  String?
+  endpoint   String?
+  isActive   Boolean  @default(true)
+  dailyLimit Int?
+  usedToday  Int      @default(0)
+  lastUsedAt DateTime?
+  notes      String?
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+}
+
+// ===== Automation Jobs (logs) =====
+model AutomationLog {
+  id         String   @id @default(cuid())
+  stage      String   // trend_discovery | source_aggregation | ai_rewriter | fact_check | seo | publish | distribute
+  status     String   // success | error | pending
+  message    String?
+  details    String?  // JSON
+  durationMs Int?
+  createdAt  DateTime @default(now())
+}
+
+// ===== Install Lock (one-time setup marker) =====
+model InstallLock {
+  id           String   @id @default(cuid())
+  isInstalled  Boolean  @default(false)
+  installedAt  DateTime?
+  version      String   @default("1.0.0")
+  adminUserId  String?
+}
