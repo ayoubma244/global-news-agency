@@ -4,7 +4,6 @@
  * POST   - create new
  */
 import { NextRequest, NextResponse } from 'next/server'
-import { db } from '@/lib/auth' // re-export avoidance
 import { db } from '@/lib/db'
 import { getCurrentAdmin } from '@/lib/auth'
 

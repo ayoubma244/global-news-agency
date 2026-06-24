@@ -39,7 +39,10 @@ export async function GET(req: NextRequest) {
       orderBy: { createdAt: 'desc' },
       take: limit,
       skip: offset,
-      include: { category: true },
+      include: {
+        category: true,
+        rssSource: { select: { name: true } },
+      },
     }),
     prisma.article.count({ where }),
   ])
@@ -54,7 +57,7 @@ export async function POST(req: NextRequest) {
   const body = await req.json()
   const {
     titleAr, titleEn, leadAr, leadEn, bodyAr, bodyEn,
-    excerpt, featuredImg, images, categoryId, sourceUrl, sourceName,
+    excerpt, featuredImg, categoryId, sourceUrl, sourceName,
     author, status = 'draft', isBreaking = false, isFeatured = false,
     seoTitle, seoDescription, seoKeywords, publishedAt,
   } = body
@@ -74,7 +77,7 @@ export async function POST(req: NextRequest) {
   const article = await prisma.article.create({
     data: {
       slug, titleAr, titleEn, leadAr, leadEn, bodyAr, bodyEn,
-      excerpt, featuredImg, images: images ? JSON.stringify(images) : null,
+      excerpt, featuredImg,
       categoryId, sourceUrl, sourceName, author: author || admin.username,
       status, isBreaking, isFeatured,
       seoTitle, seoDescription, seoKeywords,

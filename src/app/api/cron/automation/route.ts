@@ -18,7 +18,7 @@
  */
 import { NextRequest, NextResponse } from 'next/server'
 import { db } from '@/lib/db'
-import { runPipeline } from '@/lib/automation'
+import { runRssPipeline } from '@/lib/rss-automation'
 
 const prisma = db
 export const maxDuration = 300 // 5 min
@@ -41,14 +41,14 @@ export async function GET(req: NextRequest) {
     })
 
     const config = job?.config ? JSON.parse(job.config) : {}
-    const trendsLimit = config.trendsLimit || 3
-    const autoPublish = config.autoPublish ?? false
+    const maxItemsPerSource = config.maxItemsPerSource || config.trendsLimit || 3
+    const forcePublish = config.autoPublish ?? false
 
-    // Run the pipeline
+    // Run the RSS pipeline
     const start = Date.now()
-    const result = await runPipeline({
-      trendsLimit,
-      autoPublish,
+    const result = await runRssPipeline({
+      maxItemsPerSource,
+      forcePublish,
     })
     const durationMs = Date.now() - start
 

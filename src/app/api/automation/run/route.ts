@@ -1,11 +1,11 @@
 /**
  * POST /api/automation/run
- * Body: { trendsLimit?, autoPublish?, categoryId?, manualTopic? }
- * Runs the full 7-stage automation pipeline.
+ * Body: { sourceId?, maxItemsPerSource?, forcePublish? }
+ * Runs the RSS → AI Rewrite → Watermark → Publish pipeline.
  */
 import { NextRequest, NextResponse } from 'next/server'
 import { getCurrentAdmin } from '@/lib/auth'
-import { runPipeline } from '@/lib/automation'
+import { runRssPipeline } from '@/lib/rss-automation'
 
 export const maxDuration = 300 // 5 minutes
 
@@ -15,19 +15,18 @@ export async function POST(req: NextRequest) {
 
   try {
     const body = await req.json()
-    const { trendsLimit, autoPublish, categoryId, manualTopic } = body
+    const { sourceId, maxItemsPerSource, forcePublish } = body
 
-    const result = await runPipeline({
-      trendsLimit: trendsLimit || 3,
-      autoPublish: autoPublish ?? false,
-      categoryId,
-      manualTopic,
+    const result = await runRssPipeline({
+      sourceId,
+      maxItemsPerSource: maxItemsPerSource || 3,
+      forcePublish,
     })
 
     return NextResponse.json({
       ok: true,
       ...result,
-      message: `اكتشف ${result.trendsFound} ترند، عالج ${result.articlesProcessed} مقال، نشر ${result.articlesPublished} مقال`,
+      message: `معالجة ${result.sourcesProcessed} مصدر، ${result.itemsFound} عنصر جديد، ${result.articlesCreated} مقال جديد، ${result.imagesProcessed} صورة معالجة`,
     })
   } catch (e: any) {
     console.error('Automation run error:', e)

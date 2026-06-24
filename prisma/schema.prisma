@@ -47,6 +47,7 @@ model Category {
   parent   Category?  @relation("CategoryTree", fields: [parentId], references: [id], onDelete: Cascade)
   children Category[] @relation("CategoryTree")
   articles Article[]
+  rssSources RssSource[]
 }
 
 // ===== Articles =====
@@ -61,7 +62,6 @@ model Article {
   bodyEn      String?
   excerpt     String?
   featuredImg String?
-  images      String?  // JSON array of image URLs
   categoryId  String
   sourceUrl   String?
   sourceName  String?
@@ -81,6 +81,17 @@ model Article {
   category Category @relation(fields: [categoryId], references: [id], onDelete: Cascade)
   viewEvents ArticleView[]
   tags      ArticleTag[]
+  images    ArticleImage[]
+  rssSource RssSource? @relation("RssArticles", fields: [rssSourceId], references: [id], onDelete: SetNull)
+  rssSourceId String?
+
+  // AI generation metadata
+  aiToneUsed      String?
+  aiLengthUsed    String?
+  aiModel         String?
+  plagiarismScore Float?   // 0-100 (lower = more unique)
+  humanScore      Float?   // 0-100 (higher = more human-like)
+  factCheckNotes  String?
 }
 
 // ===== Pages (CMS) =====
@@ -129,6 +140,51 @@ model ApiKey {
   notes      String?
   createdAt  DateTime @default(now())
   updatedAt  DateTime @updatedAt
+}
+
+// ===== RSS Sources =====
+model RssSource {
+  id              String   @id @default(cuid())
+  name            String
+  url             String   @unique
+  siteName        String?  // اسم الموقع الأصلي
+  siteUrl         String?  // رابط الموقع الأصلي
+  categoryId      String?
+  language        String   @default("ar") // ar | en | fr | es
+  isActive        Boolean  @default(true)
+  lastFetchedAt   DateTime?
+  lastFetchStatus String?  // success | error
+  lastError       String?
+  articlesCount   Int      @default(0)
+  fetchInterval   Int      @default(60) // دقائق
+  tags            String?  // comma-separated tags to add
+  autoPublish     Boolean  @default(false)
+  aiTone          String   @default("professional") // professional | casual | analytical | breaking | story
+  aiLength        String   @default("medium") // short | medium | long
+  includeImages   Boolean  @default(true)
+  watermarkImages Boolean  @default(true)
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  category   Category?  @relation(fields: [categoryId], references: [id], onDelete: SetNull)
+  articles   Article[]  @relation("RssArticles")
+}
+
+// ===== Article Images (with watermark info) =====
+model ArticleImage {
+  id          String  @id @default(cuid())
+  articleId   String
+  article     Article @relation(fields: [articleId], references: [id], onDelete: Cascade)
+  originalUrl String
+  storedUrl   String? // بعد التحميل + العلامة المائية
+  caption     String?
+  altText     String?
+  width       Int?
+  height      Int?
+  isFeatured  Boolean @default(false)
+  isWatermarked Boolean @default(false)
+  order       Int     @default(0)
+  createdAt   DateTime @default(now())
 }
 
 // ===== Automation Jobs (logs) =====

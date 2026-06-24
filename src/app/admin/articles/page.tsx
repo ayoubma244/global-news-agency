@@ -10,7 +10,7 @@ import { Switch } from '@/components/ui/switch'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import { Badge } from '@/components/ui/badge'
-import { FileText, Plus, Edit2, Trash2, Eye, Search, AlertCircle } from 'lucide-react'
+import { FileText, Plus, Edit2, Trash2, Eye, Search, AlertCircle, Sparkles, Zap } from 'lucide-react'
 import { toast } from 'sonner'
 
 interface Article {
@@ -25,6 +25,11 @@ interface Article {
   createdAt: string
   publishedAt: string | null
   category: { id: string; nameAr: string; icon: string }
+  aiToneUsed?: string | null
+  aiModel?: string | null
+  plagiarismScore?: number | null
+  humanScore?: number | null
+  rssSource?: { name: string } | null
 }
 
 interface Category {
@@ -169,6 +174,19 @@ export default function AdminArticles() {
                   }>
                     {a.status === 'published' ? 'منشور' : a.status === 'draft' ? 'مسودة' : a.status}
                   </Badge>
+                  {a.aiModel && a.aiModel !== 'fallback' && (
+                    <Badge variant="outline" className="bg-purple-50 text-purple-700 text-xs gap-1" title={`AI: ${a.aiModel} | Tone: ${a.aiToneUsed}`}>
+                      <Sparkles className="h-3 w-3" /> AI
+                      {a.humanScore != null && (
+                        <span className="ml-1 text-green-600">{Math.round(a.humanScore)}%</span>
+                      )}
+                    </Badge>
+                  )}
+                  {a.rssSource && (
+                    <Badge variant="outline" className="text-xs gap-1" title={`مصدر: ${a.rssSource.name}`}>
+                      <Zap className="h-3 w-3" /> {a.rssSource.name}
+                    </Badge>
+                  )}
                   <div className="flex gap-1">
                     {a.status === 'draft' && (
                       <Button size="sm" variant="ghost" onClick={() => toggleStatus(a, 'published')} className="text-green-600">
