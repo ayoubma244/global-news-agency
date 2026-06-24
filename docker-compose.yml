@@ -1,0 +1,45 @@
+# ====================================
+# News Platform - Docker Compose
+# ====================================
+version: '3.8'
+
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "3000:3000"
+    environment:
+      - DATABASE_URL=file:/app/db/custom.db
+      - SESSION_SECRET=${SESSION_SECRET:-change-me}
+      - ZAI_API_KEY=${ZAI_API_KEY}
+      - CRON_SECRET=${CRON_SECRET:-cron-secret}
+      - NEXT_PUBLIC_SITE_URL=${NEXT_PUBLIC_SITE_URL:-http://localhost:3000}
+      - NODE_ENV=production
+    volumes:
+      - app-db:/app/db
+      - app-images:/app/public/images/articles
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "wget", "--spider", "-q", "http://localhost:3000/api/health"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
+
+  # Optional: Redis for caching & rate limiting (production)
+  redis:
+    image: redis:7-alpine
+    restart: unless-stopped
+    volumes:
+      - redis-data:/data
+    ports:
+      - "6379:6379"
+    profiles:
+      - production
+
+volumes:
+  app-db:
+  app-images:
+  redis-data:

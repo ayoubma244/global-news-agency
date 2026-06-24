@@ -6,8 +6,10 @@
  */
 import { NextRequest, NextResponse } from 'next/server'
 import { db } from '@/lib/db'
-import { getCurrentAdmin } from '@/lib/auth'
+import { getCurrentAdmin, rateLimit } from '@/lib/auth'
 import { logActivity } from '@/lib/activity'
+import { subscribeSchema, validate } from '@/lib/validation'
+import { headers } from 'next/headers'
 import crypto from 'crypto'
 
 const prisma = db
@@ -30,12 +32,20 @@ export async function GET(req: NextRequest) {
 
 export async function POST(req: NextRequest) {
   try {
-    const body = await req.json()
-    const { email, name, language = 'ar', preferences } = body
-
-    if (!email || !email.includes('@')) {
-      return NextResponse.json({ ok: false, error: 'بريد إلكتروني غير صالح' }, { status: 400 })
+    // Rate limit
+    const h = await headers()
+    const ip = h.get('x-forwarded-for')?.split(',')[0] || h.get('x-real-ip') || 'unknown'
+    const rl = rateLimit(`subscribe:${ip}`, 3, 60_000)
+    if (!rl.allowed) {
+      return NextResponse.json({ ok: false, error: 'محاولات كثيرة' }, { status: 429 })
     }
+
+    const body = await req.json()
+    const validation = validate(subscribeSchema, body)
+    if (!validation.success) {
+      return NextResponse.json({ ok: false, error: validation.error }, { status: 400 })
+    }
+    const { email, name, language = 'ar', preferences } = validation.data
 
     const verifyToken = crypto.randomBytes(32).toString('hex')
 

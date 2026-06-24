@@ -7,6 +7,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { db } from '@/lib/db'
 import { hashPassword, createSessionToken, setSessionCookie } from '@/lib/auth'
 import { getDefaultSettings } from '@/lib/settings'
+import { installSchema, validate } from '@/lib/validation'
 
 const SEED_CATEGORIES = [
   { slug: 'world-news', nameAr: 'أخبار عالمية', nameEn: 'World News', icon: '🌍', priority: 'High' },
@@ -45,19 +46,17 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ ok: false, error: 'الموقع مثبت مسبقاً.' }, { status: 400 })
     }
     const body = await req.json()
-    const { adminUsername, adminEmail, adminPassword, siteName } = body
-
-    if (!adminUsername || !adminEmail || !adminPassword) {
-      return NextResponse.json({ ok: false, error: 'جميع الحقول مطلوبة' }, { status: 400 })
+    const validation = validate(installSchema, body)
+    if (!validation.success) {
+      return NextResponse.json({ ok: false, error: validation.error }, { status: 400 })
     }
-    if (adminPassword.length < 6) return NextResponse.json({ ok: false, error: 'كلمة المرور يجب أن تكون 6 أحرف على الأقل' }, { status: 400 })
-    if (adminUsername.length < 3) return NextResponse.json({ ok: false, error: 'اسم المستخدم يجب أن يكون 3 أحرف على الأقل' }, { status: 400 })
+    const { adminUsername, adminEmail, adminPassword, siteName } = validation.data
 
     const admin = await db.adminUser.create({
       data: {
         username: adminUsername,
         email: adminEmail,
-        passwordHash: hashPassword(adminPassword),
+        passwordHash: await hashPassword(adminPassword),
         role: 'super_admin',
         isActive: true,
       },

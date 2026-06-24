@@ -7,6 +7,9 @@ import { NextRequest, NextResponse } from 'next/server'
 import { db } from '@/lib/db'
 import { getSessionId, getVisitorInfo } from '@/lib/session'
 import { getZAI, isAIConfigured } from '@/lib/zai'
+import { commentSchema, validate } from '@/lib/validation'
+import { rateLimit } from '@/lib/auth'
+import { headers } from 'next/headers'
 
 export async function GET(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   const { id } = await params
@@ -30,18 +33,21 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ id: 
 
 export async function POST(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   const { id } = await params
-  const body = await req.json()
-  const { authorName, authorEmail, content, parentId } = body
 
-  if (!authorName || !content) {
-    return NextResponse.json({ ok: false, error: 'الاسم والمحتوى مطلوبان' }, { status: 400 })
+  // Rate limit: 5 comments per minute per IP
+  const h = await headers()
+  const ip = h.get('x-forwarded-for')?.split(',')[0] || h.get('x-real-ip') || 'unknown'
+  const rl = rateLimit(`comment:${ip}`, 5, 60_000)
+  if (!rl.allowed) {
+    return NextResponse.json({ ok: false, error: 'تعليقات كثيرة. انتظر دقيقة.' }, { status: 429 })
   }
-  if (content.length < 3 || content.length > 2000) {
-    return NextResponse.json({ ok: false, error: 'التعليق يجب أن يكون 3-2000 حرف' }, { status: 400 })
+
+  const body = await req.json()
+  const validation = validate(commentSchema, body)
+  if (!validation.success) {
+    return NextResponse.json({ ok: false, error: validation.error }, { status: 400 })
   }
-  if (authorName.length > 50) {
-    return NextResponse.json({ ok: false, error: 'الاسم طويل جداً' }, { status: 400 })
-  }
+  const { authorName, authorEmail, content, parentId } = validation.data
 
   // Verify article exists
   const article = await db.article.findUnique({ where: { id }, select: { id: true } })
