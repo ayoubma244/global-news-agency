@@ -340,7 +340,7 @@ async function processItem(
 
   await logStage('publish', 'success',
     `Created article: ${rewritten.titleAr.slice(0, 50)}... (${status})`,
-    { id: article.id, slug, status, factCheckScore: factCheckResult?.score },
+    { id: article.id, slug, status, factCheckScore: verificationResult?.factCheckResult?.score },
     0
   )
 
@@ -360,54 +360,72 @@ async function processItem(
   if (source.includeImages && item.images.length > 0) {
     const imgStart = Date.now()
     try {
-      const processedImages = await processImages(
-        item.images,
-        {
-          siteName,
-          position: 'bottom-right',
-          opacity: 75,
-          fontSize: 0.035,
-          textColor: '#ffffff',
-        },
-        5
-      )
-
-      // Save image records + set featured image
-      for (let i = 0; i < processedImages.length; i++) {
-        const img = processedImages[i]
-        await db.articleImage.create({
-          data: {
-            articleId: article.id,
-            originalUrl: img.originalUrl,
-            storedUrl: img.storedUrl,
-            width: img.width,
-            height: img.height,
-            isFeatured: i === 0,
-            isWatermarked: img.isWatermarked,
-            order: i,
+      // Try watermarking, but if it fails, just use original URLs
+      let processedImages: any[] = []
+      try {
+        processedImages = await processImages(
+          item.images,
+          {
+            siteName,
+            position: 'bottom-right',
+            opacity: 75,
+            fontSize: 0.035,
+            textColor: '#ffffff',
           },
-        })
-        result.imagesProcessed++
+          3
+        )
+      } catch (wmError: any) {
+        // Watermarking failed (likely sharp on serverless) - use originals
+        await logStage('image_process', 'error', `Watermarking failed: ${wmError.message} - using original URLs`)
       }
 
-      // Set featured image on article - use stored URL or fall back to original
+      // If watermarking produced results, save them
       if (processedImages.length > 0) {
+        for (let i = 0; i < processedImages.length; i++) {
+          const img = processedImages[i]
+          await db.articleImage.create({
+            data: {
+              articleId: article.id,
+              originalUrl: img.originalUrl,
+              storedUrl: img.storedUrl,
+              width: img.width,
+              height: img.height,
+              isFeatured: i === 0,
+              isWatermarked: img.isWatermarked,
+              order: i,
+            },
+          })
+          result.imagesProcessed++
+        }
+
         const featuredImg = processedImages[0].storedUrl || processedImages[0].originalUrl
         await db.article.update({
           where: { id: article.id },
           data: { featuredImg },
         })
-      } else if (item.images.length > 0) {
-        // If watermarking failed, use original image URL
+      } else {
+        // Use original image URLs directly (no watermarking)
+        const originalImg = item.images[0]
         await db.article.update({
           where: { id: article.id },
-          data: { featuredImg: item.images[0] },
+          data: { featuredImg: originalImg },
         })
+        await db.articleImage.create({
+          data: {
+            articleId: article.id,
+            originalUrl: originalImg,
+            storedUrl: originalImg,
+            isFeatured: true,
+            isWatermarked: false,
+            order: 0,
+          },
+        })
+        result.imagesProcessed++
       }
 
       await logStage('image_process', 'success',
-        `${processedImages.length}/${item.images.length} images processed for: ${rewritten.titleAr.slice(0, 40)}...`,
-        { count: processedImages.length },
+        `Images set for: ${rewritten.titleAr.slice(0, 40)}... (${item.images.length} found)`,
+        { count: item.images.length },
         Date.now() - imgStart
       )
     } catch (e: any) {
