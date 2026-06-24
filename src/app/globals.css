@@ -120,3 +120,32 @@
     @apply bg-background text-foreground;
   }
 }
+
+/* Dark Mode */
+.dark {
+  --background: 15 23 42;
+  --foreground: 248 250 252;
+  color-scheme: dark;
+}
+
+.dark body {
+  background-color: rgb(15 23 42);
+  color: rgb(248 250 252);
+}
+
+.dark .bg-white { background-color: rgb(30 41 59) !important; }
+.dark .bg-slate-50 { background-color: rgb(15 23 42) !important; }
+.dark .bg-slate-100 { background-color: rgb(30 41 59) !important; }
+.dark .text-slate-900 { color: rgb(248 250 252) !important; }
+.dark .text-slate-800 { color: rgb(226 232 240) !important; }
+.dark .text-slate-700 { color: rgb(203 213 225) !important; }
+.dark .text-slate-600 { color: rgb(148 163 184) !important; }
+.dark .border-slate-200 { border-color: rgb(51 65 85) !important; }
+.dark .border-slate-100 { border-color: rgb(51 65 85) !important; }
+.dark .bg-slate-900 { background-color: rgb(2 6 23) !important; }
+.dark .hover\:bg-slate-50:hover { background-color: rgb(30 41 59) !important; }
+.dark .hover\:bg-slate-100:hover { background-color: rgb(51 65 85) !important; }
+.dark .hover\:bg-slate-200:hover { background-color: rgb(71 85 105) !important; }
+.dark .divide-slate-100 > * + * { border-color: rgb(51 65 85) !important; }
+.dark .divide-slate-200 > * + * { border-color: rgb(51 65 85) !important; }
+.dark .bg-gradient-to-br { background-image: linear-gradient(to bottom right, rgb(30 41 59), rgb(15 23 42)) !important; }

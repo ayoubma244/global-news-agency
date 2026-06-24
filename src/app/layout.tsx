@@ -4,6 +4,7 @@ import "./globals.css";
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as SonnerToaster } from "@/components/ui/sonner";
 import { initSentry } from "@/lib/sentry";
+import { ThemeProvider } from "@/lib/theme-provider";
 
 // Initialize Sentry (no-op if not configured)
 initSentry();
@@ -105,7 +106,9 @@ export default function RootLayout({
         )}
       </head>
       <body className={`${geistSans.variable} antialiased bg-white text-slate-900`}>
-        {children}
+        <ThemeProvider>
+          {children}
+        </ThemeProvider>
         <Toaster />
         <SonnerToaster position="top-center" richColors />
       </body>

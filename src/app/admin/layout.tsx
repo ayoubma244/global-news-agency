@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react'
 import { useRouter, usePathname } from 'next/navigation'
 import Link from 'next/link'
 import { Button } from '@/components/ui/button'
-import { Newspaper, LayoutDashboard, FolderTree, FileText, Settings, Key, LogOut, Menu, X, ExternalLink, FilePlus, Bot, BarChart3, Activity, Clock, Users, Rss, Megaphone, MessageSquare } from 'lucide-react'
+import { Newspaper, LayoutDashboard, FolderTree, FileText, Settings, Key, LogOut, Menu, X, ExternalLink, FilePlus, Bot, BarChart3, Activity, Clock, Users, Rss, Megaphone, MessageSquare, Database, Calendar, Share2 } from 'lucide-react'
 
 interface Admin {
   id: string
@@ -19,6 +19,7 @@ const navItems = [
   { href: '/admin/categories', label: 'الكاتيجوريز', icon: FolderTree },
   { href: '/admin/rss-sources', label: 'مصادر RSS', icon: Rss },
   { href: '/admin/articles', label: 'المقالات', icon: FileText },
+  { href: '/admin/calendar', label: 'التقويم', icon: Calendar },
   { href: '/admin/comments', label: 'التعليقات', icon: MessageSquare },
   { href: '/admin/pages', label: 'الصفحات', icon: FilePlus },
   { href: '/admin/ads', label: 'الإعلانات', icon: Megaphone },
@@ -26,6 +27,7 @@ const navItems = [
   { href: '/admin/jobs', label: 'المهام المجدولة', icon: Clock },
   { href: '/admin/api-keys', label: 'API Keys', icon: Key },
   { href: '/admin/subscribers', label: 'المشتروكون', icon: Users },
+  { href: '/admin/backup', label: 'النسخ الاحتياطي', icon: Database },
   { href: '/admin/activity', label: 'سجل النشاط', icon: Activity },
   { href: '/admin/settings', label: 'الإعدادات', icon: Settings },
 ]

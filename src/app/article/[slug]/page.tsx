@@ -10,6 +10,7 @@ import BookmarkButton from '@/components/bookmark-button'
 import ReadingProgress from '@/components/reading-progress'
 import AiSummaryCard from '@/components/ai-summary-card'
 import ShareButtons from '@/components/share-buttons'
+import ThemeToggle from '@/components/theme-toggle'
 
 const prisma = new PrismaClient()
 
@@ -141,10 +142,13 @@ export default async function ArticlePage({ params }: { params: Promise<{ slug: 
             </div>
             <span className="font-bold text-slate-900">{siteName}</span>
           </Link>
-          <Link href={article.category ? `/category/${article.category.slug}` : '/'} className="flex items-center gap-1 text-sm text-slate-600 hover:text-slate-900">
-            <ChevronLeft className="h-4 w-4" />
-            {article.category?.icon} {article.category?.nameAr}
-          </Link>
+          <div className="flex items-center gap-2">
+            <Link href={article.category ? `/category/${article.category.slug}` : '/'} className="flex items-center gap-1 text-sm text-slate-600 hover:text-slate-900">
+              <ChevronLeft className="h-4 w-4" />
+              {article.category?.icon} {article.category?.nameAr}
+            </Link>
+            <ThemeToggle />
+          </div>
         </div>
       </header>
 
