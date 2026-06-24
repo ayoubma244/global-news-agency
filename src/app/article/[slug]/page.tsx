@@ -11,6 +11,8 @@ import ReadingProgress from '@/components/reading-progress'
 import AiSummaryCard from '@/components/ai-summary-card'
 import ShareButtons from '@/components/share-buttons'
 import ThemeToggle from '@/components/theme-toggle'
+import SourceTransparencyPanel from '@/components/source-transparency'
+import ReadingModeToggle from '@/components/reading-mode'
 
 const prisma = new PrismaClient()
 
@@ -22,10 +24,13 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
     where: { slug },
     include: { category: true },
   })
-  if (!article) return { title: 'مقال غير موجود' }
+  if (!article) return { title: 'Article not found' }
 
   const base = process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000'
   const url = `${base}/article/${article.slug}`
+
+  // Dynamic OG image
+  const ogImageUrl = `${base}/api/og?title=${encodeURIComponent(article.titleAr)}&category=${encodeURIComponent(article.category?.nameEn || article.category?.nameAr || 'News')}&icon=${encodeURIComponent(article.category?.icon || '📰')}&site=${encodeURIComponent('Global News Agency')}`
 
   return {
     title: article.seoTitle || article.titleAr,
@@ -43,14 +48,17 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
       publishedTime: article.publishedAt?.toISOString() || article.createdAt.toISOString(),
       modifiedTime: article.updatedAt.toISOString(),
       authors: article.author ? [article.author] : undefined,
-      images: article.featuredImg ? [{ url: article.featuredImg }] : [],
+      images: [
+        ...(article.featuredImg ? [{ url: article.featuredImg }] : []),
+        { url: ogImageUrl, width: 1200, height: 630, alt: article.titleAr },
+      ],
       tags: article.seoKeywords?.split(',').map(k => k.trim()),
     },
     twitter: {
       card: 'summary_large_image',
       title: article.titleAr,
       description: article.leadAr || article.excerpt || '',
-      images: article.featuredImg ? [article.featuredImg] : [],
+      images: [ogImageUrl, ...(article.featuredImg ? [article.featuredImg] : [])],
     },
   }
 }
@@ -148,6 +156,7 @@ export default async function ArticlePage({ params }: { params: Promise<{ slug: 
               {article.category?.icon} {article.category?.nameAr}
             </Link>
             <ThemeToggle />
+            <ReadingModeToggle />
           </div>
         </div>
       </header>
@@ -155,7 +164,7 @@ export default async function ArticlePage({ params }: { params: Promise<{ slug: 
       <main className="flex-1 max-w-4xl mx-auto px-4 py-6 w-full">
         {/* Breadcrumb */}
         <nav className="text-xs text-slate-500 mb-4 flex items-center gap-2">
-          <Link href="/" className="hover:text-slate-900">الرئيسية</Link>
+          <Link href="/" className="hover:text-slate-900">Home</Link>
           <ChevronLeft className="h-3 w-3" />
           {article.category && (
             <>
@@ -237,14 +246,15 @@ export default async function ArticlePage({ params }: { params: Promise<{ slug: 
             </div>
           )}
 
-          {/* Source */}
-          {article.sourceUrl && (
-            <div className="mt-6 p-4 bg-slate-50 rounded-lg">
-              <p className="text-xs text-slate-500">
-                المصدر: <a href={article.sourceUrl} target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline">{article.sourceUrl}</a>
-              </p>
-            </div>
-          )}
+          {/* Source Transparency Panel */}
+          <SourceTransparencyPanel
+            sourceUrl={article.sourceUrl}
+            sourceName={article.sourceName}
+            publishedAt={article.publishedAt?.toISOString() || article.createdAt.toISOString()}
+            updatedAt={article.updatedAt.toISOString()}
+            factCheckScore={article.humanScore}
+            verificationStatus={article.factCheckNotes ? 'verified' : null}
+          />
 
           {/* AI Summary */}
           <div className="mt-8">
