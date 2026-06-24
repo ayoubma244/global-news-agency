@@ -2,8 +2,10 @@
 
 import { useState, useEffect } from 'react'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
+import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
-import { Users, Mail, CheckCircle2, XCircle, Clock } from 'lucide-react'
+import { Users, Mail, CheckCircle2, XCircle, Clock, Send, Loader2 } from 'lucide-react'
+import { toast } from 'sonner'
 
 interface Subscriber {
   id: string
@@ -19,6 +21,7 @@ export default function AdminSubscribers() {
   const [subscribers, setSubscribers] = useState<Subscriber[]>([])
   const [total, setTotal] = useState(0)
   const [loading, setLoading] = useState(true)
+  const [sending, setSending] = useState(false)
 
   const load = async () => {
     setLoading(true)
@@ -36,14 +39,37 @@ export default function AdminSubscribers() {
   const verified = subscribers.filter(s => s.isVerified).length
   const active = subscribers.filter(s => s.isActive).length
 
+  const sendNewsletter = async () => {
+    if (!confirm('سيتم إرسال النشرة لكل المشتركين المؤكدين. متابعة؟')) return
+    setSending(true)
+    try {
+      const res = await fetch('/api/newsletter/send', { method: 'POST' })
+      const data = await res.json()
+      if (data.ok) {
+        toast.success(`تم إرسال النشرة إلى ${data.sent} مشترك (${data.failed} فشل)`)
+      } else {
+        toast.error(data.error)
+      }
+    } catch (e: any) {
+      toast.error(e.message)
+    }
+    setSending(false)
+  }
+
   return (
     <div className="space-y-6">
-      <div>
-        <h1 className="text-2xl font-bold text-slate-900 flex items-center gap-2">
-          <Users className="h-6 w-6" />
-          المشتركون في النشرة
-        </h1>
-        <p className="text-slate-600 mt-1">إدارة قائمة المشتركين في النشرة البريدية</p>
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="text-2xl font-bold text-slate-900 flex items-center gap-2">
+            <Users className="h-6 w-6" />
+            المشتركون في النشرة
+          </h1>
+          <p className="text-slate-600 mt-1">إدارة قائمة المشتركين في النشرة البريدية</p>
+        </div>
+        <Button onClick={sendNewsletter} disabled={sending || total === 0} className="gap-2">
+          {sending ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}
+          {sending ? 'جاري الإرسال...' : 'إرسال النشرة'}
+        </Button>
       </div>
 
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3">

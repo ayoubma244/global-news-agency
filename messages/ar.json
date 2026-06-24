@@ -1,0 +1,78 @@
+{
+  "siteName": "وكالة الأنباء العالمية",
+  "tagline": "أخبار العالم في الوقت الفعلي",
+  "nav": {
+    "home": "الرئيسية",
+    "search": "بحث",
+    "categories": "الأقسام",
+    "about": "من نحن",
+    "contact": "اتصل بنا",
+    "login": "دخول الأدمن"
+  },
+  "home": {
+    "breaking": "عاجل",
+    "featured": "الأخبار المميزة",
+    "latest": "أحدث الأخبار",
+    "sections": "الأقسام",
+    "noArticles": "لا توجد أخبار منشورة بعد",
+    "lastUpdate": "آخر تحديث"
+  },
+  "article": {
+    "readMore": "اقرأ المزيد",
+    "related": "أخبار ذات صلة",
+    "share": "شارك الخبر",
+    "reactions": "تفاعل مع الخبر",
+    "comments": "التعليقات",
+    "addComment": "أضف تعليقاً",
+    "namePlaceholder": "الاسم",
+    "commentPlaceholder": "اكتب تعليقك...",
+    "submitComment": "نشر التعليق",
+    "noComments": "كن أول من يعلق على هذا الخبر",
+    "bookmark": "حفظ",
+    "bookmarked": "محفوظ",
+    "readingTime": "دقيقة للقراءة",
+    "reading": "قراءة",
+    "aiSummary": "ملخص ذكي (TL;DR)",
+    "keyPoints": "النقاط الرئيسية",
+    "readability": "سهولة القراءة",
+    "clickbait": "clickbait",
+    "sentiment": "المزاج",
+    "generateSummary": "توليد الملخص بالـ AI"
+  },
+  "reactions": {
+    "like": "إعجاب",
+    "love": "أحببته",
+    "wow": "مدهش",
+    "sad": "محزن",
+    "angry": "مغضب"
+  },
+  "sentiment": {
+    "positive": "إيجابي",
+    "negative": "سلبي",
+    "neutral": "محايد"
+  },
+  "newsletter": {
+    "title": "اشترك في النشرة البريدية",
+    "subtitle": "احصل على آخر الأخبار مباشرة في بريدك يومياً",
+    "placeholder": "بريدك الإلكتروني",
+    "button": "اشتراك",
+    "success": "تم الاشتراك بنجاح! تحقق من بريدك لتأكيد الاشتراك.",
+    "privacy": "🔒 خصوصيتك مهمة لنا. لن نشارك بريدك مع أي طرف ثالث."
+  },
+  "footer": {
+    "quickLinks": "روابط سريعة",
+    "followUs": "تابعنا",
+    "rights": "جميع الحقوق محفوظة"
+  },
+  "common": {
+    "loading": "جاري التحميل...",
+    "error": "حدث خطأ",
+    "save": "حفظ",
+    "cancel": "إلغاء",
+    "delete": "حذف",
+    "edit": "تعديل",
+    "search": "بحث",
+    "results": "نتيجة",
+    "noResults": "لا توجد نتائج"
+  }
+}

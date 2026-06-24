@@ -9,6 +9,8 @@ import { db } from '@/lib/db'
 import { getCurrentAdmin, rateLimit } from '@/lib/auth'
 import { logActivity } from '@/lib/activity'
 import { subscribeSchema, validate } from '@/lib/validation'
+import { sendEmail, welcomeEmail, isEmailConfigured } from '@/lib/email'
+import { trackSubscription } from '@/lib/posthog'
 import { headers } from 'next/headers'
 import crypto from 'crypto'
 
@@ -68,9 +70,22 @@ export async function POST(req: NextRequest) {
       },
     })
 
+    // Send welcome + verify email
+    const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000'
+    const verifyUrl = `${baseUrl}/api/subscribers/verify?token=${verifyToken}`
+    if (isEmailConfigured()) {
+      const { subject, html } = welcomeEmail(name, verifyUrl)
+      await sendEmail({ to: email, subject, html })
+    }
+
+    // Track
+    await trackSubscription(email)
+
     return NextResponse.json({
       ok: true,
-      message: 'تم الاشتراك بنجاح! تحقق من بريدك لتأكيد الاشتراك.',
+      message: isEmailConfigured()
+        ? 'تم الاشتراك بنجاح! تحقق من بريدك لتأكيد الاشتراك.'
+        : 'تم الاشتراك بنجاح! (خدمة البريد غير مُفعّلة)',
       subscriber: { id: subscriber.id, email: subscriber.email },
     })
   } catch (e: any) {

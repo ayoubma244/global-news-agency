@@ -1,0 +1,78 @@
+{
+  "siteName": "Global News Agency",
+  "tagline": "Real-time world news coverage",
+  "nav": {
+    "home": "Home",
+    "search": "Search",
+    "categories": "Categories",
+    "about": "About",
+    "contact": "Contact",
+    "login": "Admin Login"
+  },
+  "home": {
+    "breaking": "Breaking",
+    "featured": "Featured News",
+    "latest": "Latest News",
+    "sections": "Sections",
+    "noArticles": "No published articles yet",
+    "lastUpdate": "Last update"
+  },
+  "article": {
+    "readMore": "Read more",
+    "related": "Related Articles",
+    "share": "Share",
+    "reactions": "React to this news",
+    "comments": "Comments",
+    "addComment": "Add a comment",
+    "namePlaceholder": "Name",
+    "commentPlaceholder": "Write your comment...",
+    "submitComment": "Post Comment",
+    "noComments": "Be the first to comment",
+    "bookmark": "Save",
+    "bookmarked": "Saved",
+    "readingTime": "min read",
+    "reading": "reading",
+    "aiSummary": "AI Summary (TL;DR)",
+    "keyPoints": "Key Points",
+    "readability": "Readability",
+    "clickbait": "clickbait",
+    "sentiment": "Sentiment",
+    "generateSummary": "Generate AI Summary"
+  },
+  "reactions": {
+    "like": "Like",
+    "love": "Love",
+    "wow": "Wow",
+    "sad": "Sad",
+    "angry": "Angry"
+  },
+  "sentiment": {
+    "positive": "Positive",
+    "negative": "Negative",
+    "neutral": "Neutral"
+  },
+  "newsletter": {
+    "title": "Subscribe to our Newsletter",
+    "subtitle": "Get the latest news directly in your inbox daily",
+    "placeholder": "Your email",
+    "button": "Subscribe",
+    "success": "Subscribed successfully! Check your email to confirm.",
+    "privacy": "🔒 Your privacy matters. We won't share your email."
+  },
+  "footer": {
+    "quickLinks": "Quick Links",
+    "followUs": "Follow Us",
+    "rights": "All rights reserved"
+  },
+  "common": {
+    "loading": "Loading...",
+    "error": "An error occurred",
+    "save": "Save",
+    "cancel": "Cancel",
+    "delete": "Delete",
+    "edit": "Edit",
+    "search": "Search",
+    "results": "results",
+    "noResults": "No results"
+  }
+}

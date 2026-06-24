@@ -1,0 +1,78 @@
+{
+  "siteName": "Agencia Mundial de Noticias",
+  "tagline": "Cobertura mundial en tiempo real",
+  "nav": {
+    "home": "Inicio",
+    "search": "Buscar",
+    "categories": "Categorías",
+    "about": "Acerca de",
+    "contact": "Contacto",
+    "login": "Acceso admin"
+  },
+  "home": {
+    "breaking": "Urgente",
+    "featured": "Noticias destacadas",
+    "latest": "Últimas noticias",
+    "sections": "Secciones",
+    "noArticles": "No hay artículos publicados",
+    "lastUpdate": "Última actualización"
+  },
+  "article": {
+    "readMore": "Leer más",
+    "related": "Artículos relacionados",
+    "share": "Compartir",
+    "reactions": "Reaccionar",
+    "comments": "Comentarios",
+    "addComment": "Añadir comentario",
+    "namePlaceholder": "Nombre",
+    "commentPlaceholder": "Escribe tu comentario...",
+    "submitComment": "Publicar",
+    "noComments": "Sé el primero en comentar",
+    "bookmark": "Guardar",
+    "bookmarked": "Guardado",
+    "readingTime": "min de lectura",
+    "reading": "leyendo",
+    "aiSummary": "Resumen IA (TL;DR)",
+    "keyPoints": "Puntos clave",
+    "readability": "Legibilidad",
+    "clickbait": "clickbait",
+    "sentiment": "Sentimiento",
+    "generateSummary": "Generar resumen IA"
+  },
+  "reactions": {
+    "like": "Me gusta",
+    "love": "Me encanta",
+    "wow": "Wow",
+    "sad": "Triste",
+    "angry": "Enojado"
+  },
+  "sentiment": {
+    "positive": "Positivo",
+    "negative": "Negativo",
+    "neutral": "Neutral"
+  },
+  "newsletter": {
+    "title": "Suscríbete al boletín",
+    "subtitle": "Recibe las últimas noticias en tu correo",
+    "placeholder": "Tu email",
+    "button": "Suscribirse",
+    "success": "¡Suscripción exitosa! Revisa tu email.",
+    "privacy": "🔒 Tu privacidad importa. No compartimos tu email."
+  },
+  "footer": {
+    "quickLinks": "Enlaces rápidos",
+    "followUs": "Síguenos",
+    "rights": "Todos los derechos reservados"
+  },
+  "common": {
+    "loading": "Cargando...",
+    "error": "Ocurrió un error",
+    "save": "Guardar",
+    "cancel": "Cancelar",
+    "delete": "Eliminar",
+    "edit": "Editar",
+    "search": "Buscar",
+    "results": "resultados",
+    "noResults": "Sin resultados"
+  }
+}

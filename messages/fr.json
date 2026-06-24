@@ -1,0 +1,78 @@
+{
+  "siteName": "Agence mondiale d'actualités",
+  "tagline": "Couverture mondiale en temps réel",
+  "nav": {
+    "home": "Accueil",
+    "search": "Rechercher",
+    "categories": "Catégories",
+    "about": "À propos",
+    "contact": "Contact",
+    "login": "Connexion admin"
+  },
+  "home": {
+    "breaking": "Urgent",
+    "featured": "Actualités en vedette",
+    "latest": "Dernières actualités",
+    "sections": "Sections",
+    "noArticles": "Aucun article publié",
+    "lastUpdate": "Dernière mise à jour"
+  },
+  "article": {
+    "readMore": "Lire plus",
+    "related": "Articles liés",
+    "share": "Partager",
+    "reactions": "Réagir",
+    "comments": "Commentaires",
+    "addComment": "Ajouter un commentaire",
+    "namePlaceholder": "Nom",
+    "commentPlaceholder": "Écrivez votre commentaire...",
+    "submitComment": "Publier",
+    "noComments": "Soyez le premier à commenter",
+    "bookmark": "Sauvegarder",
+    "bookmarked": "Sauvegardé",
+    "readingTime": "min de lecture",
+    "reading": "lecture",
+    "aiSummary": "Résumé IA (TL;DR)",
+    "keyPoints": "Points clés",
+    "readability": "Lisibilité",
+    "clickbait": "clickbait",
+    "sentiment": "Sentiment",
+    "generateSummary": "Générer le résumé IA"
+  },
+  "reactions": {
+    "like": "J'aime",
+    "love": "J'adore",
+    "wow": "Wouah",
+    "sad": "Triste",
+    "angry": "Fâché"
+  },
+  "sentiment": {
+    "positive": "Positif",
+    "negative": "Négatif",
+    "neutral": "Neutre"
+  },
+  "newsletter": {
+    "title": "Abonnez-vous à la newsletter",
+    "subtitle": "Recevez les dernières actualités dans votre boîte mail",
+    "placeholder": "Votre email",
+    "button": "S'abonner",
+    "success": "Abonnement réussi ! Vérifiez votre email.",
+    "privacy": "🔒 Votre vie privée compte. Nous ne partageons pas votre email."
+  },
+  "footer": {
+    "quickLinks": "Liens rapides",
+    "followUs": "Suivez-nous",
+    "rights": "Tous droits réservés"
+  },
+  "common": {
+    "loading": "Chargement...",
+    "error": "Une erreur est survenue",
+    "save": "Sauvegarder",
+    "cancel": "Annuler",
+    "delete": "Supprimer",
+    "edit": "Modifier",
+    "search": "Rechercher",
+    "results": "résultats",
+    "noResults": "Aucun résultat"
+  }
+}
