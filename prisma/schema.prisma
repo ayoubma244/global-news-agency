@@ -68,7 +68,7 @@ model Article {
   sourceUrl   String?
   sourceName  String?
   author      String?
-  status      String   @default("draft") // draft | published | scheduled | archived
+  status      String   @default("draft") // draft | published | scheduled | archived | needs_review
   isBreaking  Boolean  @default(false)
   isFeatured  Boolean  @default(false)
   views       Int      @default(0)
@@ -79,6 +79,15 @@ model Article {
   publishedAt DateTime?
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
+
+  // Performance indexes
+  @@index([status, publishedAt(sort: Desc)])
+  @@index([categoryId, status])
+  @@index([isBreaking, status])
+  @@index([isFeatured, status])
+  @@index([sourceUrl])
+  @@index([rssSourceId])
+  @@index([createdAt(sort: Desc)])
 
   category Category @relation(fields: [categoryId], references: [id], onDelete: Cascade)
   viewEvents ArticleView[]

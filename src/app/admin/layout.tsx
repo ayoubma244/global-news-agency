@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react'
 import { useRouter, usePathname } from 'next/navigation'
 import Link from 'next/link'
 import { Button } from '@/components/ui/button'
-import { Newspaper, LayoutDashboard, FolderTree, FileText, Settings, Key, LogOut, Menu, X, ExternalLink, FilePlus, Bot, BarChart3, Activity, Clock, Users, Rss, Megaphone, MessageSquare, Database, Calendar, Share2 } from 'lucide-react'
+import { Newspaper, LayoutDashboard, FolderTree, FileText, Settings, Key, LogOut, Menu, X, ExternalLink, FilePlus, Bot, BarChart3, Activity, Clock, Users, Rss, Megaphone, MessageSquare, Database, Calendar, Share2, Server } from 'lucide-react'
 
 interface Admin {
   id: string
@@ -28,6 +28,7 @@ const navItems = [
   { href: '/admin/api-keys', label: 'API Keys', icon: Key },
   { href: '/admin/subscribers', label: 'المشتروكون', icon: Users },
   { href: '/admin/backup', label: 'النسخ الاحتياطي', icon: Database },
+  { href: '/admin/system', label: 'صحة النظام', icon: Server },
   { href: '/admin/activity', label: 'سجل النشاط', icon: Activity },
   { href: '/admin/settings', label: 'الإعدادات', icon: Settings },
 ]
