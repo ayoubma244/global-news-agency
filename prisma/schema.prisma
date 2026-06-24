@@ -85,6 +85,15 @@ model Article {
   rssSource RssSource? @relation("RssArticles", fields: [rssSourceId], references: [id], onDelete: SetNull)
   rssSourceId String?
 
+  // New relations
+  summary       ArticleSummary?
+  comments      Comment[]
+  reactions     Reaction[]
+  bookmarks     Bookmark[]
+  readingHistory ReadingHistory[]
+  versions      ArticleVersion[]
+  visitors      SiteVisitor[]
+
   // AI generation metadata
   aiToneUsed      String?
   aiLengthUsed    String?
@@ -287,4 +296,134 @@ model ArticleView {
 
   @@index([articleId])
   @@index([viewedAt])
+}
+
+// ===== Article AI Summary (TL;DR) =====
+model ArticleSummary {
+  id          String   @id @default(cuid())
+  articleId   String   @unique
+  article     Article  @relation(fields: [articleId], references: [id], onDelete: Cascade)
+  summaryAr   String   // 2-3 جمل
+  summaryEn   String?
+  keyPoints   String?  // JSON array of bullet points
+  readingTime Int?     // بالدقائق
+  readabilityScore Float? // 0-100
+  clickbaitScore   Float? // 0-100 (الأقل أفضل)
+  sentiment  String?  // positive | negative | neutral
+  aiModel    String?
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+}
+
+// ===== Comments =====
+model Comment {
+  id        String   @id @default(cuid())
+  articleId String
+  article   Article  @relation(fields: [articleId], references: [id], onDelete: Cascade)
+  authorName String
+  authorEmail String?
+  content   String
+  parentId  String?  // for replies
+  status    String   @default("pending") // pending | approved | rejected | spam
+  aiModerationScore Float? // 0-100 (الأعلى = آمن)
+  aiToxicityScore Float? // 0-100 (الأعلى = سام)
+  ipAddress String?
+  userAgent String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  replies Comment[] @relation("CommentReplies")
+  parent  Comment?  @relation("CommentReplies", fields: [parentId], references: [id], onDelete: Cascade)
+
+  @@index([articleId])
+}
+
+// ===== Reactions =====
+model Reaction {
+  id        String   @id @default(cuid())
+  articleId String
+  article   Article  @relation(fields: [articleId], references: [id], onDelete: Cascade)
+  type      String   // like | love | wow | sad | angry
+  sessionId String   // anonymous user identifier
+  createdAt DateTime @default(now())
+
+  @@unique([articleId, sessionId, type])
+  @@index([articleId])
+}
+
+// ===== Bookmarks (Save for later) =====
+model Bookmark {
+  id        String   @id @default(cuid())
+  articleId String
+  article   Article  @relation(fields: [articleId], references: [id], onDelete: Cascade)
+  sessionId String
+  createdAt DateTime @default(now())
+
+  @@unique([articleId, sessionId])
+  @@index([sessionId])
+}
+
+// ===== Reading History =====
+model ReadingHistory {
+  id        String   @id @default(cuid())
+  articleId String
+  article   Article  @relation(fields: [articleId], references: [id], onDelete: Cascade)
+  sessionId String
+  readProgress Float? // 0-100 (نسبة القراءة)
+  readingTime Int?    // ثواني قضاها في القراءة
+  viewedAt  DateTime @default(now())
+
+  @@index([sessionId])
+  @@index([articleId])
+}
+
+// ===== Ad Spaces =====
+model AdSpace {
+  id          String   @id @default(cuid())
+  name        String
+  position    String   // header | sidebar | in-article | footer | between-articles
+  type        String   @default("banner") // banner | native | sponsored | adsense
+  content     String?  // HTML/JS code
+  imageUrl    String?
+  linkUrl     String?
+  isActive    Boolean  @default(true)
+  startDate   DateTime?
+  endDate     DateTime?
+  impressions Int      @default(0)
+  clicks      Int      @default(0)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+// ===== Article Versions (versioning) =====
+model ArticleVersion {
+  id        String   @id @default(cuid())
+  articleId String
+  article   Article  @relation(fields: [articleId], references: [id], onDelete: Cascade)
+  version   Int
+  titleAr   String
+  bodyAr    String
+  editedBy  String?
+  editNotes String?
+  createdAt DateTime @default(now())
+
+  @@index([articleId])
+}
+
+// ===== Real-time Visitors =====
+model SiteVisitor {
+  id        String   @id @default(cuid())
+  sessionId String   @unique
+  articleId String?
+  article   Article? @relation(fields: [articleId], references: [id], onDelete: SetNull)
+  ipAddress String?
+  country   String?
+  city      String?
+  device    String?
+  browser   String?
+  referrer  String?
+  lastActive DateTime @default(now())
+  createdAt DateTime @default(now())
+
+  @@index([lastActive])
 }

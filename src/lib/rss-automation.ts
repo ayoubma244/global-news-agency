@@ -157,6 +157,18 @@ async function processItem(
   autoPublish: boolean,
   result: RssPipelineResult
 ) {
+  // Determine category - use source's category, or find first active category
+  let categoryId = source.categoryId
+  if (!categoryId) {
+    const fallbackCat = await db.category.findFirst({
+      where: { level: 1, isActive: true },
+      orderBy: { order: 'asc' },
+    })
+    categoryId = fallbackCat?.id
+  }
+  if (!categoryId) {
+    throw new Error('No category available')
+  }
   // 1. AI Rewrite
   const rewriteStart = Date.now()
   const rewritten = await rewriteArticle(item, {
@@ -195,7 +207,7 @@ async function processItem(
       bodyAr: rewritten.bodyAr,
       bodyEn: rewritten.bodyEn,
       excerpt: rewritten.excerpt,
-      categoryId: source.categoryId,
+      categoryId: categoryId,
       sourceUrl: item.link,
       sourceName: source.siteName || source.name,
       author: 'Automated System',

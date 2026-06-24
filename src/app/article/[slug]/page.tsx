@@ -4,6 +4,12 @@ import { notFound } from 'next/navigation'
 import { Newspaper, Eye, Clock, ChevronLeft, Share2, Tag } from 'lucide-react'
 import { getAllSettings } from '@/lib/settings'
 import type { Metadata } from 'next'
+import ReactionsBar from '@/components/reactions-bar'
+import CommentsSection from '@/components/comments-section'
+import BookmarkButton from '@/components/bookmark-button'
+import ReadingProgress from '@/components/reading-progress'
+import AiSummaryCard from '@/components/ai-summary-card'
+import ShareButtons from '@/components/share-buttons'
 
 const prisma = new PrismaClient()
 
@@ -123,6 +129,9 @@ export default async function ArticlePage({ params }: { params: Promise<{ slug: 
         dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
       />
 
+      {/* Reading Progress + Time tracker */}
+      <ReadingProgress articleId={article.id} readingTime={Math.max(1, Math.round(article.bodyAr.split(/\s+/).length / 200))} />
+
       {/* Header */}
       <header className="bg-white border-b border-slate-200 sticky top-0 z-30">
         <div className="max-w-7xl mx-auto px-4 py-3 flex items-center justify-between">
@@ -232,6 +241,31 @@ export default async function ArticlePage({ params }: { params: Promise<{ slug: 
               </p>
             </div>
           )}
+
+          {/* AI Summary */}
+          <div className="mt-8">
+            <AiSummaryCard articleId={article.id} articleBody={article.bodyAr} />
+          </div>
+
+          {/* Action buttons row */}
+          <div className="mt-6 flex items-center gap-2 flex-wrap">
+            <BookmarkButton articleId={article.id} />
+          </div>
+
+          {/* Share buttons */}
+          <div className="mt-4">
+            <ShareButtons articleId={article.id} title={article.titleAr} />
+          </div>
+
+          {/* Reactions */}
+          <div className="mt-4">
+            <ReactionsBar articleId={article.id} />
+          </div>
+
+          {/* Comments */}
+          <div className="mt-6">
+            <CommentsSection articleId={article.id} />
+          </div>
         </article>
 
         {/* Related */}
