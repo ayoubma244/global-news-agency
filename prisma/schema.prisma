@@ -104,6 +104,7 @@ model Article {
   readingHistory ReadingHistory[]
   versions      ArticleVersion[]
   visitors      SiteVisitor[]
+  liveUpdates   LiveUpdate[]
 
   // AI generation metadata
   aiToneUsed      String?
@@ -307,6 +308,20 @@ model ArticleView {
 
   @@index([articleId])
   @@index([viewedAt])
+}
+
+// ===== Live Blog Updates =====
+model LiveUpdate {
+  id        String   @id @default(cuid())
+  articleId String
+  article   Article  @relation(fields: [articleId], references: [id], onDelete: Cascade)
+  content   String
+  type      String   @default("update") // update | key_event | breaking | summary
+  isPinned  Boolean  @default(false)
+  author    String?
+  createdAt DateTime @default(now())
+
+  @@index([articleId, createdAt(sort: Desc)])
 }
 
 // ===== Article AI Summary (TL;DR) =====
