@@ -38,25 +38,21 @@ export default function AdminDashboard() {
   }, [])
 
   const cards = [
-    { label: 'الكاتيجوريز', value: stats?.categories ?? 0, icon: FolderTree, href: '/admin/categories', color: 'bg-blue-500' },
-    { label: 'المقالات', value: stats?.articles ?? 0, icon: FileText, href: '/admin/articles', color: 'bg-green-500' },
-    { label: 'الصفحات', value: stats?.pages ?? 0, icon: FilePlus, href: '/admin/pages', color: 'bg-purple-500' },
-    { label: 'الأتمتة', value: 'تشغيل', icon: Bot, href: '/admin/automation', color: 'bg-indigo-500' },
+    { label: 'Categories', value: stats?.categories ?? 0, icon: FolderTree, href: '/admin/categories', color: 'bg-blue-500' },
+    { label: 'Articles', value: stats?.articles ?? 0, icon: FileText, href: '/admin/articles', color: 'bg-green-500' },
+    { label: 'Pages', value: stats?.pages ?? 0, icon: FilePlus, href: '/admin/pages', color: 'bg-purple-500' },
+    { label: 'Automation', value: 'Run', icon: Bot, href: '/admin/automation', color: 'bg-indigo-500' },
   ]
 
-  if (loading) {
-    return <div className="animate-pulse">جاري التحميل...</div>
-  }
+  if (loading) return <div className="animate-pulse">Loading...</div>
 
   return (
     <div className="space-y-6">
-      {/* Page header */}
       <div>
-        <h1 className="text-2xl font-bold text-slate-900">لوحة التحكم</h1>
-        <p className="text-slate-600 mt-1">نظرة عامة على موقعك الإخباري</p>
+        <h1 className="text-2xl font-bold text-slate-900">Dashboard</h1>
+        <p className="text-slate-600 mt-1">Overview of your news platform</p>
       </div>
 
-      {/* Stats cards */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         {cards.map(card => {
           const Icon = card.icon
@@ -80,24 +76,22 @@ export default function AdminDashboard() {
         })}
       </div>
 
-      {/* Two column section */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
-        {/* Recent articles */}
         <Card className="lg:col-span-2">
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <Clock className="h-5 w-5" />
-              أحدث المقالات
+              Recent Articles
             </CardTitle>
-            <CardDescription>آخر 5 مقالات تمت إضافتها</CardDescription>
+            <CardDescription>Latest 5 articles</CardDescription>
           </CardHeader>
           <CardContent>
             {recent.length === 0 ? (
               <div className="text-center py-8 text-slate-500">
                 <FileText className="h-12 w-12 mx-auto mb-2 opacity-30" />
-                <p>لا توجد مقالات بعد</p>
+                <p>No articles yet</p>
                 <Link href="/admin/articles" className="text-blue-600 hover:underline text-sm mt-2 inline-block">
-                  أضف أول مقال ←
+                  Add your first article →
                 </Link>
               </div>
             ) : (
@@ -108,22 +102,19 @@ export default function AdminDashboard() {
                       <p className="font-medium text-slate-900 truncate">{a.titleAr}</p>
                       <div className="flex items-center gap-2 mt-1 text-xs text-slate-500">
                         {a.category && (
-                          <span className="flex items-center gap-1">
-                            {a.category.icon} {a.category.nameAr}
-                          </span>
+                          <span className="flex items-center gap-1">{a.category.icon} {a.category.nameAr}</span>
                         )}
                         <span>•</span>
-                        <span className="flex items-center gap-1">
-                          <Eye className="h-3 w-3" /> {a.views}
-                        </span>
+                        <span className="flex items-center gap-1"><Eye className="h-3 w-3" /> {a.views}</span>
                       </div>
                     </div>
                     <span className={`px-2 py-0.5 rounded text-xs font-medium ${
                       a.status === 'published' ? 'bg-green-100 text-green-700' :
                       a.status === 'draft' ? 'bg-slate-100 text-slate-700' :
+                      a.status === 'needs_review' ? 'bg-red-100 text-red-700' :
                       'bg-yellow-100 text-yellow-700'
                     }`}>
-                      {a.status === 'published' ? 'منشور' : a.status === 'draft' ? 'مسودة' : a.status}
+                      {a.status === 'published' ? 'Published' : a.status === 'draft' ? 'Draft' : a.status === 'needs_review' ? 'Review' : a.status}
                     </span>
                   </div>
                 ))}
@@ -132,14 +123,13 @@ export default function AdminDashboard() {
           </CardContent>
         </Card>
 
-        {/* Quick actions */}
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <Activity className="h-5 w-5" />
-              إجراءات سريعة
+              Quick Actions
             </CardTitle>
-            <CardDescription>اختصارات للوصول السريع</CardDescription>
+            <CardDescription>Shortcuts</CardDescription>
           </CardHeader>
           <CardContent className="space-y-2">
             <Link href="/admin/articles" className="block p-3 bg-slate-50 hover:bg-slate-100 rounded-lg transition-colors">
@@ -148,8 +138,8 @@ export default function AdminDashboard() {
                   <FileText className="h-4 w-4 text-white" />
                 </div>
                 <div>
-                  <p className="font-medium text-sm text-slate-900">إضافة مقال</p>
-                  <p className="text-xs text-slate-500">إنشاء مقال جديد</p>
+                  <p className="font-medium text-sm text-slate-900">Add Article</p>
+                  <p className="text-xs text-slate-500">Create a new article</p>
                 </div>
               </div>
             </Link>
@@ -159,19 +149,8 @@ export default function AdminDashboard() {
                   <FolderTree className="h-4 w-4 text-white" />
                 </div>
                 <div>
-                  <p className="font-medium text-sm text-slate-900">إدارة التصنيفات</p>
-                  <p className="text-xs text-slate-500">إضافة/تعديل/تفعيل</p>
-                </div>
-              </div>
-            </Link>
-            <Link href="/admin/api-keys" className="block p-3 bg-slate-50 hover:bg-slate-100 rounded-lg transition-colors">
-              <div className="flex items-center gap-3">
-                <div className="w-8 h-8 bg-orange-500 rounded-lg flex items-center justify-center">
-                  <Key className="h-4 w-4 text-white" />
-                </div>
-                <div>
-                  <p className="font-medium text-sm text-slate-900">إضافة API Key</p>
-                  <p className="text-xs text-slate-500">لمصادر الأخبار</p>
+                  <p className="font-medium text-sm text-slate-900">Manage Categories</p>
+                  <p className="text-xs text-slate-500">Add/edit/toggle</p>
                 </div>
               </div>
             </Link>
@@ -181,8 +160,8 @@ export default function AdminDashboard() {
                   <Bot className="h-4 w-4 text-white" />
                 </div>
                 <div>
-                  <p className="font-medium text-sm text-slate-900">🚀 تشغيل الأتمتة</p>
-                  <p className="text-xs text-slate-500">جلب + AI + نشر تلقائي</p>
+                  <p className="font-medium text-sm text-slate-900">🚀 Run Automation</p>
+                  <p className="text-xs text-slate-500">Fetch + AI + publish</p>
                 </div>
               </div>
             </Link>
@@ -192,8 +171,8 @@ export default function AdminDashboard() {
                   <Newspaper className="h-4 w-4 text-white" />
                 </div>
                 <div>
-                  <p className="font-medium text-sm text-slate-900">إعدادات الموقع</p>
-                  <p className="text-xs text-slate-500">SEO، السوشيال، الأتمتة</p>
+                  <p className="font-medium text-sm text-slate-900">Site Settings</p>
+                  <p className="text-xs text-slate-500">SEO, Social, Automation</p>
                 </div>
               </div>
             </Link>

@@ -33,10 +33,10 @@ const SEED_CATEGORIES = [
 ]
 
 const SEED_PAGES = [
-  { slug: 'about', titleAr: 'من نحن', titleEn: 'About Us', contentAr: 'وكالة الأنباء العالمية - موقع إخباري آلي يغطي العالم بأربع لغات على مدار الساعة.', contentEn: 'Global News Agency - automated news website covering the world in 4 languages, 24/7.', template: 'about', showInMenu: true, order: 1 },
-  { slug: 'contact', titleAr: 'اتصل بنا', titleEn: 'Contact', contentAr: 'للتواصل معنا، استخدم البريد الإلكتروني أو منصات التواصل الاجتماعي.', contentEn: 'To contact us, please use email or our social media platforms.', template: 'contact', showInMenu: true, order: 2 },
-  { slug: 'privacy', titleAr: 'سياسة الخصوصية', titleEn: 'Privacy Policy', contentAr: 'سياسة الخصوصية الخاصة بموقعنا.', contentEn: 'Our privacy policy.', template: 'privacy', showInMenu: false, order: 3 },
-  { slug: 'terms', titleAr: 'الشروط والأحكام', titleEn: 'Terms of Service', contentAr: 'الشروط والأحكام لاستخدام موقعنا.', contentEn: 'Terms of service for using our website.', template: 'terms', showInMenu: false, order: 4 },
+  { slug: 'about', titleAr: 'من نحن', titleEn: 'About Us', contentAr: 'Global News Agency - automated news platform covering the world in 4 languages, 24/7.', contentEn: 'Global News Agency - automated news platform covering the world in 4 languages, 24/7.', template: 'about', showInMenu: true, order: 1 },
+  { slug: 'contact', titleAr: 'اتصل بنا', titleEn: 'Contact', contentAr: 'To contact us, please use email or our social media platforms.', contentEn: 'To contact us, please use email or our social media platforms.', template: 'contact', showInMenu: true, order: 2 },
+  { slug: 'privacy', titleAr: 'سياسة الخصوصية', titleEn: 'Privacy Policy', contentAr: 'Our privacy policy.', contentEn: 'Our privacy policy.', template: 'privacy', showInMenu: false, order: 3 },
+  { slug: 'terms', titleAr: 'الشروط والأحكام', titleEn: 'Terms of Service', contentAr: 'Terms of service for using our website.', contentEn: 'Terms of service for using our website.', template: 'terms', showInMenu: false, order: 4 },
 ]
 
 export async function POST(req: NextRequest) {

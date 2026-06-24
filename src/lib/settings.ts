@@ -54,19 +54,19 @@ export async function isInstalled(): Promise<boolean> {
 export async function getDefaultSettings(): Promise<{ key: string; value: string; type: string; group: string; label: string }[]> {
   return [
     // General
-    { key: 'site_name', value: 'وكالة الأنباء العالمية', type: 'text', group: 'general', label: 'اسم الموقع' },
+    { key: 'site_name', value: 'Global News Agency', type: 'text', group: 'general', label: 'Site Name' },
     { key: 'site_name_en', value: 'Global News Agency', type: 'text', group: 'general', label: 'Site Name (EN)' },
-    { key: 'site_tagline', value: 'أخبار العالم في الوقت الفعلي', type: 'text', group: 'general', label: 'الشعار' },
-    { key: 'site_description', value: 'موقع إخباري آلي يغطي العالم بأربع لغات', type: 'textarea', group: 'general', label: 'وصف الموقع' },
-    { key: 'site_url', value: '', type: 'text', group: 'general', label: 'رابط الموقع' },
-    { key: 'site_logo', value: '', type: 'text', group: 'general', label: 'شعار الموقع (URL)' },
-    { key: 'site_language', value: 'ar', type: 'text', group: 'general', label: 'اللغة الافتراضية' },
-    { key: 'timezone', value: 'Africa/Algiers', type: 'text', group: 'general', label: 'المنطقة الزمنية' },
-    { key: 'contact_email', value: '', type: 'text', group: 'general', label: 'بريد التواصل' },
+    { key: 'site_tagline', value: 'Real-time world news coverage', type: 'text', group: 'general', label: 'Tagline' },
+    { key: 'site_description', value: 'Automated global news platform covering the world in 4 languages, 24/7.', type: 'textarea', group: 'general', label: 'Site Description' },
+    { key: 'site_url', value: '', type: 'text', group: 'general', label: 'Site URL' },
+    { key: 'site_logo', value: '', type: 'text', group: 'general', label: 'Site Logo (URL)' },
+    { key: 'site_language', value: 'en', type: 'text', group: 'general', label: 'Default Language' },
+    { key: 'timezone', value: 'UTC', type: 'text', group: 'general', label: 'Timezone' },
+    { key: 'contact_email', value: '', type: 'text', group: 'general', label: 'Contact Email' },
     // SEO
-    { key: 'seo_title', value: 'وكالة الأنباء العالمية', type: 'text', group: 'seo', label: 'SEO Title' },
-    { key: 'seo_description', value: 'آخر أخبار العالم في السياسة والاقتصاد والرياضة والتكنولوجيا', type: 'textarea', group: 'seo', label: 'SEO Description' },
-    { key: 'seo_keywords', value: 'أخبار, عالمية, سياسة, اقتصاد, رياضة, تكنولوجيا', type: 'text', group: 'seo', label: 'SEO Keywords' },
+    { key: 'seo_title', value: 'Global News Agency | Breaking News, World Updates', type: 'text', group: 'seo', label: 'SEO Title' },
+    { key: 'seo_description', value: 'Latest world news in politics, economy, sports, technology, and more — 24/7 coverage in 4 languages.', type: 'textarea', group: 'seo', label: 'SEO Description' },
+    { key: 'seo_keywords', value: 'news, breaking news, world news, politics, economy, sports, technology', type: 'text', group: 'seo', label: 'SEO Keywords' },
     { key: 'google_analytics', value: '', type: 'text', group: 'seo', label: 'Google Analytics ID' },
     { key: 'google_site_verification', value: '', type: 'text', group: 'seo', label: 'Google Site Verification' },
     // Social

@@ -6,7 +6,6 @@ import { Toaster as SonnerToaster } from "@/components/ui/sonner";
 import { initSentry } from "@/lib/sentry";
 import { ThemeProvider } from "@/lib/theme-provider";
 
-// Initialize Sentry (no-op if not configured)
 initSentry();
 
 const geistSans = Geist({
@@ -17,16 +16,16 @@ const geistSans = Geist({
 export const metadata: Metadata = {
   metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000'),
   title: {
-    default: "وكالة الأنباء العالمية | Global News Agency",
-    template: "%s | وكالة الأنباء العالمية",
+    default: "Global News Agency | Breaking News, World Updates",
+    template: "%s | Global News Agency",
   },
-  description: "موقع إخباري آلي يغطي العالم بأربع لغات على مدار الساعة - أخبار السياسة والاقتصاد والرياضة والتكنولوجيا والصحة",
-  keywords: ["أخبار", "news", "عالمية", "سياسة", "اقتصاد", "رياضة", "تكنولوجيا", "صحة", "كرة قدم", "أسعار"],
+  description: "Automated global news platform covering politics, economy, sports, technology, health, and more — in 4 languages, 24/7.",
+  keywords: ["news", "breaking news", "world news", "politics", "economy", "sports", "technology", "health"],
   authors: [{ name: "Global News Agency" }],
   creator: "Global News Agency",
   publisher: "Global News Agency",
   manifest: "/manifest.json",
-  applicationName: "وكالة الأنباء العالمية",
+  applicationName: "Global News Agency",
   appleWebApp: {
     capable: true,
     statusBarStyle: "black-translucent",
@@ -39,17 +38,17 @@ export const metadata: Metadata = {
   },
   openGraph: {
     type: "website",
-    locale: "ar_AR",
-    alternateLocale: ["en_US", "fr_FR", "es_ES"],
+    locale: "en_US",
+    alternateLocale: ["ar_AR", "fr_FR", "es_ES"],
     url: "/",
-    siteName: "وكالة الأنباء العالمية",
-    title: "وكالة الأنباء العالمية | Global News Agency",
-    description: "موقع إخباري آلي يغطي العالم بأربع لغات على مدار الساعة",
+    siteName: "Global News Agency",
+    title: "Global News Agency | Breaking News, World Updates",
+    description: "Automated global news platform covering the world in 4 languages, 24/7.",
   },
   twitter: {
     card: "summary_large_image",
-    title: "وكالة الأنباء العالمية",
-    description: "آخر أخبار العالم في السياسة والاقتصاد والرياضة والتكنولوجيا",
+    title: "Global News Agency",
+    description: "Latest world news in politics, economy, sports, and technology.",
   },
   robots: {
     index: true,
@@ -83,21 +82,12 @@ export default function RootLayout({
   children,
 }: Readonly<{ children: React.ReactNode }>) {
   return (
-    <html lang="ar" dir="rtl" suppressHydrationWarning>
+    <html lang="en" dir="ltr" suppressHydrationWarning>
       <head>
-        {/* PostHog Analytics */}
         {process.env.NEXT_PUBLIC_POSTHOG_KEY && (
           <script
             dangerouslySetInnerHTML={{
               __html: `
-                (function(h,o,t,j,a,r){
-                  h.hj=h.hj||function(){(h.hj.q=h.hj.q||[]).push(arguments)};
-                  h._hjSettings={hjid:1,hjsv:6};
-                  a=o.getElementsByTagName('head')[0];
-                  r=o.createElement('script');r.async=1;
-                  r.src=t+h._hjSettings.hjid+j+h._hjSettings.hjsv;
-                  a.appendChild(r);
-                })(window,document,'https://app.posthog.com/static/array.js','?v=');
                 !function(t,e){var o,n,p,r;e.__SV||(window.posthog=e,e._i=[],e.init=function(i,s,a){function g(t,e){var o=e.split(".");2==o.length&&(t=t[o[0]],e=o[1])}t.set=a?t.get:function(t,e){if(t=e?g(e,t):t,"string"==typeof t)return function(){};if(void 0===t)return function(){};for(var o=arguments.length,n=Array(o>1?o-1:0),p=1;p<o;p++)n[p-1]=arguments[p];return t.apply(e,n)},t.get=function(){},e._i.push([i,s,a])},e.__SV=1)}(document,window.posthog||[]);
                 posthog.init('${process.env.NEXT_PUBLIC_POSTHOG_KEY}', {api_host: '${process.env.NEXT_PUBLIC_POSTHOG_HOST || 'https://app.posthog.com'}'})
               `,

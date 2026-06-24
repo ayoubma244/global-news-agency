@@ -16,7 +16,6 @@ export default function LoginPage() {
   const [form, setForm] = useState({ username: '', password: '' })
 
   useEffect(() => {
-    // Already logged in? redirect to admin
     fetch('/api/auth/me').then(r => r.json()).then(d => {
       if (d.ok) router.push('/admin')
     })
@@ -34,7 +33,7 @@ export default function LoginPage() {
       })
       const data = await res.json()
       if (!data.ok) {
-        setError(data.error || 'فشل تسجيل الدخول')
+        setError(data.error || 'Login failed')
         setLoading(false)
         return
       }
@@ -46,24 +45,23 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 flex items-center justify-center p-4" dir="rtl">
+    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 flex items-center justify-center p-4">
       <div className="w-full max-w-md">
-        {/* Logo */}
         <div className="text-center mb-8">
           <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-white text-slate-900 mb-4">
             <Newspaper className="h-8 w-8" />
           </div>
-          <h1 className="text-2xl font-bold text-white">لوحة التحكم</h1>
-          <p className="text-slate-400 mt-1">سجّل دخولك للوصول إلى الإدارة</p>
+          <h1 className="text-2xl font-bold text-white">Admin Panel</h1>
+          <p className="text-slate-400 mt-1">Sign in to access the dashboard</p>
         </div>
 
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <Lock className="h-5 w-5" />
-              تسجيل الدخول
+              Sign In
             </CardTitle>
-            <CardDescription>أدخل بيانات حساب الأدمن للدخول إلى لوحة التحكم</CardDescription>
+            <CardDescription>Enter your admin credentials to access the dashboard</CardDescription>
           </CardHeader>
           <CardContent>
             <form onSubmit={handleSubmit} className="space-y-4">
@@ -75,51 +73,33 @@ export default function LoginPage() {
               )}
 
               <div className="space-y-2">
-                <Label htmlFor="username">اسم المستخدم أو البريد</Label>
+                <Label htmlFor="username">Username or Email</Label>
                 <div className="relative">
-                  <User className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
-                  <Input
-                    id="username"
-                    value={form.username}
-                    onChange={e => setForm({ ...form, username: e.target.value })}
-                    placeholder="admin"
-                    required
-                    className="pr-10"
-                  />
+                  <User className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
+                  <Input id="username" value={form.username} onChange={e => setForm({ ...form, username: e.target.value })} placeholder="admin" required className="pl-10" />
                 </div>
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="password">كلمة المرور</Label>
+                <Label htmlFor="password">Password</Label>
                 <div className="relative">
-                  <Lock className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
-                  <Input
-                    id="password"
-                    type="password"
-                    value={form.password}
-                    onChange={e => setForm({ ...form, password: e.target.value })}
-                    placeholder="••••••••"
-                    required
-                    className="pr-10"
-                  />
+                  <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
+                  <Input id="password" type="password" value={form.password} onChange={e => setForm({ ...form, password: e.target.value })} placeholder="••••••••" required className="pl-10" />
                 </div>
               </div>
 
               <Button type="submit" disabled={loading} className="w-full" size="lg">
                 {loading ? (
-                  <>
-                    <Loader2 className="h-4 w-4 animate-spin ml-2" />
-                    جاري الدخول...
-                  </>
+                  <><Loader2 className="h-4 w-4 animate-spin mr-2" />Signing in...</>
                 ) : (
-                  'دخول'
+                  'Sign In'
                 )}
               </Button>
             </form>
           </CardContent>
           <CardFooter className="flex justify-between text-xs text-slate-500">
-            <a href="/" className="hover:text-slate-700">← العودة للموقع</a>
-            <a href="/install" className="hover:text-slate-700">تثبيت الموقع</a>
+            <a href="/" className="hover:text-slate-700">← Back to site</a>
+            <a href="/install" className="hover:text-slate-700">Install site</a>
           </CardFooter>
         </Card>
       </div>
