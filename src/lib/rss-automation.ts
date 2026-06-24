@@ -226,26 +226,42 @@ async function processItem(
     }
   }
 
-  // 2. Fact-Checking (compare source vs rewritten)
-  let factCheckResult: any = null
+  // 2. Semantic Verification (Hallucination detection)
+  // يجمع: fact-check + claim extraction + AI verification
+  let verificationResult: any = null
   try {
-    const { factCheck } = await import('@/lib/fact-check')
-    factCheckResult = factCheck(item.content || item.summary || item.title, rewritten.bodyAr)
+    const { verifyArticle } = await import('@/lib/semantic-verify')
+    verificationResult = await verifyArticle(
+      item.content || item.summary || '',
+      item.title,
+      rewritten.bodyAr,
+      rewritten.titleAr
+    )
 
-    if (factCheckResult.needsReview) {
-      aiFailed = true  // Route to manual review if facts don't match
-      await logStage('fact_check', 'error',
-        `Fact-check failed (score: ${factCheckResult.score}%) for: ${rewritten.titleAr.slice(0, 40)}...`,
-        { score: factCheckResult.score, discrepancies: factCheckResult.discrepancies.slice(0, 3) },
+    if (verificationResult.needsManualReview) {
+      aiFailed = true  // Route to manual review
+      await logStage('semantic_verify', 'error',
+        `Verification ${verificationResult.status} (confidence: ${verificationResult.confidence}%) for: ${rewritten.titleAr.slice(0, 40)}...`,
+        {
+          status: verificationResult.status,
+          confidence: verificationResult.confidence,
+          recommendations: verificationResult.recommendations.slice(0, 3),
+          hallucinations: verificationResult.aiVerification ? {
+            addedDetails: verificationResult.aiVerification.addedDetails.length,
+            alteredQuotes: verificationResult.aiVerification.alteredQuotes.length,
+            unsupportedClaims: verificationResult.aiVerification.unsupportedClaims.length,
+          } : null,
+        },
       )
     } else {
-      await logStage('fact_check', 'success',
-        `Fact-check passed (score: ${factCheckResult.score}%)`,
-        { score: factCheckResult.score },
+      await logStage('semantic_verify', 'success',
+        `Verification ${verificationResult.status} (confidence: ${verificationResult.confidence}%)`,
+        { status: verificationResult.status, confidence: verificationResult.confidence },
       )
     }
   } catch (e: any) {
-    await logStage('fact_check', 'error', e.message)
+    await logStage('semantic_verify', 'error', e.message)
+    // Non-fatal - continue without verification
   }
 
   // 3. Generate slug
@@ -297,9 +313,24 @@ async function processItem(
       aiModel: rewritten.model,
       plagiarismScore: rewritten.plagiarismScore,
       humanScore: rewritten.humanScore,
-      factCheckNotes: factCheckResult ? JSON.stringify({
-        score: factCheckResult.score,
-        discrepancies: factCheckResult.discrepancies.slice(0, 5),
+      factCheckNotes: verificationResult ? JSON.stringify({
+        status: verificationResult.status,
+        confidence: verificationResult.confidence,
+        factCheckScore: verificationResult.factCheckResult?.score,
+        claims: {
+          total: verificationResult.claims?.length || 0,
+          verified: verificationResult.claims?.filter((c: any) => c.verified).length || 0,
+          unverified: verificationResult.claims?.filter((c: any) => !c.verified).length || 0,
+        },
+        hallucinations: verificationResult.aiVerification ? {
+          addedDetails: verificationResult.aiVerification.addedDetails.length,
+          alteredQuotes: verificationResult.aiVerification.alteredQuotes.length,
+          meaningShift: verificationResult.aiVerification.meaningShift.length,
+          unsupportedClaims: verificationResult.aiVerification.unsupportedClaims.length,
+          assessment: verificationResult.aiVerification.overallAssessment,
+        } : null,
+        recommendations: verificationResult.recommendations?.slice(0, 5),
+        needsManualReview: verificationResult.needsManualReview,
       }) : null,
     },
   })
