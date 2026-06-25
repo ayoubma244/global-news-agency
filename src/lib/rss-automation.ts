@@ -17,6 +17,7 @@ import { fetchRssFeed, getNewRssItems, type RssItem } from '@/lib/rss-parser'
 import { rewriteArticle, type AiTone, type AiLength } from '@/lib/ai-rewriter'
 import { processImages } from '@/lib/image-watermark'
 import { getAllSettings } from '@/lib/settings'
+import { isAdContent } from '@/lib/content-filter'
 
 // ===== Logging helper =====
 export async function logStage(stage: string, status: string, message?: string, details?: any, durationMs?: number) {
@@ -170,6 +171,16 @@ async function processItem(
     throw new Error('No category available')
   }
 
+  // 0. CONTENT FILTER - Skip ads, CTAs, promotional content
+  const adCheck = isAdContent(item.title, item.summary, item.content || '', item.link)
+  if (adCheck.isAd) {
+    await logStage('content_filter', 'success',
+      `SKIPPED ad/CTA content: "${item.title.slice(0, 50)}..." (score: ${adCheck.score})`,
+      { reason: adCheck.reason, score: adCheck.score, link: item.link },
+    )
+    return  // Skip this item entirely
+  }
+
   // 1. AI Rewrite (with error handling → manual review queue)
   const rewriteStart = Date.now()
   let rewritten
@@ -264,13 +275,15 @@ async function processItem(
     // Non-fatal - continue without verification
   }
 
-  // 3. Generate slug
-  const slug = (rewritten.titleEn || rewritten.titleAr)
+  // 3. Generate slug - ensure clean, readable URL
+  const slugBase = (rewritten.titleEn || rewritten.titleAr || item.title)
     .toLowerCase()
-    .replace(/[^\w\u0600-\u06FF\s-]/g, '')
-    .trim()
-    .replace(/\s+/g, '-')
-    .slice(0, 80) + '-' + Date.now().toString(36)
+    .replace(/[^\w\s-]/g, '')  // Remove special chars (keep word chars, spaces, hyphens)
+    .replace(/\s+/g, '-')      // Spaces to hyphens
+    .replace(/-+/g, '-')       // Multiple hyphens to single
+    .replace(/^-|-$/g, '')     // Remove leading/trailing hyphens
+    .slice(0, 70)              // Limit length
+  const slug = slugBase + '-' + Date.now().toString(36)
 
   // 4. Determine status
   // - If AI failed OR fact-check failed → 'needs_review' (manual review queue)
