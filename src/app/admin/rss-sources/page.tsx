@@ -153,7 +153,7 @@ export default function AdminRssSources() {
               if (!confirm('Add 35+ RSS sources from major news outlets (CNN, BBC, Reuters, etc)?')) return
               setSeeding(true)
               try {
-                const res = await fetch('/api/rss-sources/seed', { method: 'POST' })
+                const res = await fetch('/api/seed-rss', { method: 'POST' })
                 const data = await res.json()
                 if (data.ok) {
                   toast.success(`Added ${data.added} sources (${data.skipped} already exist)`)
