@@ -1,0 +1,9 @@
+{
+  "buildCommand": "prisma generate && prisma db push --accept-data-loss && next build",
+  "framework": "nextjs",
+  "functions": {
+    "src/app/api/og/route.tsx": {
+      "memory": 1024
+    }
+  }
+}
